@@ -1,0 +1,106 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 83a8209965b59374d8b71045cad885cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PixelDefense.Gameplay::PixelDefense.Gameplay.VisualConfig
+  WorldPerSlice: 0.3
+  CubeFill: 0.86
+  CubeHeight: 0.92
+  HeadVoxel: 0.5
+  NeckGap: 0.62
+  WallHeight: 1.15
+  SlotSize: 2.65
+  SlotGap: 0.42
+  ColumnSpacing: 5.4
+  RowSpacing: 4.7
+  ColumnsGap: 1.6
+  VisibleRows: 3
+  CannonSize: 4.5
+  SlotCannonSize: 3
+  ScaleColors:
+  - {r: 0.9490196, g: 0.27058825, b: 0.23921569, a: 1}
+  - {r: 1, g: 0.54901963, b: 0.12156863, a: 1}
+  - {r: 1, g: 0.8235294, b: 0.22745098, a: 1}
+  - {r: 0.2784314, g: 0.8117647, b: 0.2901961, a: 1}
+  - {r: 0.64705884, g: 0.8901961, b: 0.22745098, a: 1}
+  - {r: 0.2, g: 0.8235294, b: 0.9098039, a: 1}
+  - {r: 0.24705882, g: 0.4862745, b: 0.95686275, a: 1}
+  - {r: 0.6117647, g: 0.33333334, b: 0.9490196, a: 1}
+  - {r: 1, g: 0.4509804, b: 0.7254902, a: 1}
+  - {r: 0.9647059, g: 0.9490196, b: 0.91764706, a: 1}
+  - {r: 0.6901961, g: 0.45490196, b: 0.24705882, a: 1}
+  - {r: 0.2509804, g: 0.27450982, b: 0.34901962, a: 1}
+  BackgroundColor: {r: 0.2, g: 0.22, b: 0.36, a: 1}
+  FloorColor: {r: 0.3, g: 0.33, b: 0.52, a: 1}
+  WallColor: {r: 0.8, g: 0.82, b: 0.95, a: 1}
+  PlatformColor: {r: 0.47, g: 0.51, b: 0.74, a: 1}
+  PlatformRimColor: {r: 0.86, g: 0.88, b: 1, a: 1}
+  SlotColor: {r: 0.21, g: 0.23, b: 0.38, a: 1}
+  TrayColor: {r: 0.24, g: 0.26, b: 0.42, a: 1}
+  DangerColor: {r: 1, g: 0.25, b: 0.2, a: 1}
+  Skins:
+  - Id: ember
+    Main: {r: 1, g: 0.47843137, b: 0.101960786, a: 1}
+    Belly: {r: 1, g: 0.7607843, b: 0.47843137, a: 1}
+    Horn: {r: 1, g: 0.94509804, b: 0.84705883, a: 1}
+    Accent: {r: 0.8509804, g: 0.28235295, b: 0.10980392, a: 1}
+  - Id: jade
+    Main: {r: 0.21176471, g: 0.7607843, b: 0.3529412, a: 1}
+    Belly: {r: 0.7254902, g: 0.9490196, b: 0.54901963, a: 1}
+    Horn: {r: 1, g: 0.95686275, b: 0.7882353, a: 1}
+    Accent: {r: 0.11764706, g: 0.54901963, b: 0.26666668, a: 1}
+  - Id: frost
+    Main: {r: 0.36078432, g: 0.78431374, b: 0.9490196, a: 1}
+    Belly: {r: 0.8862745, g: 0.96862745, b: 1, a: 1}
+    Horn: {r: 1, g: 1, b: 1, a: 1}
+    Accent: {r: 0.18039216, g: 0.5254902, b: 0.7882353, a: 1}
+  - Id: venom
+    Main: {r: 0.6117647, g: 0.33333334, b: 0.9490196, a: 1}
+    Belly: {r: 0.8901961, g: 0.78431374, b: 1, a: 1}
+    Horn: {r: 1, g: 0.8901961, b: 0.43137255, a: 1}
+    Accent: {r: 0.41568628, g: 0.1764706, b: 0.7529412, a: 1}
+  - Id: gold
+    Main: {r: 1, g: 0.7607843, b: 0.12156863, a: 1}
+    Belly: {r: 1, g: 0.9411765, b: 0.6901961, a: 1}
+    Horn: {r: 1, g: 1, b: 1, a: 1}
+    Accent: {r: 0.8784314, g: 0.47843137, b: 0.0627451, a: 1}
+  - Id: shadow
+    Main: {r: 0.2901961, g: 0.30980393, b: 0.4, a: 1}
+    Belly: {r: 0.56078434, g: 0.5803922, b: 0.6784314, a: 1}
+    Horn: {r: 1, g: 0.3529412, b: 0.23529412, a: 1}
+    Accent: {r: 0.16470589, g: 0.1764706, b: 0.23921569, a: 1}
+  ShadowTint: {r: 0.55, g: 0.5, b: 0.9, a: 1}
+  ShadowTintStrength: 0.45
+  RimColor: {r: 0.9, g: 0.92, b: 1, a: 1}
+  RimStrength: 0.22
+  Wrap: 0.45
+  SpecularPower: 28
+  SpecularStrength: 0.18
+  AmbientMultiplier: 0.85
+  ToyMaterial: {fileID: 2100000, guid: e8685a29645061242bd450e742dbb4b1, type: 2}
+  ToyInstancedMaterial: {fileID: 2100000, guid: 551d9d27e8cdbda488b084d1285e7266, type: 2}
+  DigitsMaterial: {fileID: 2100000, guid: 7f942ed361dd79442ab2d9658efdde39, type: 2}
+  GlowMaterial: {fileID: 2100000, guid: 5691a17c27e4d014786e262b6a469926, type: 2}
+  RingMaterial: {fileID: 2100000, guid: cc25e7ad3729ae6438ea0b385a9ac8fb, type: 2}
+  ParticleAdditive: {fileID: 2100000, guid: e25ec6e41e7143245ba4a1827768163e, type: 2}
+  ParticleAlpha: {fileID: 2100000, guid: bba06c55c13a7a74291b73228c938fd2, type: 2}
+  ParticleConfetti: {fileID: 2100000, guid: 62ba9b6b3c9b69444aa0fbdd7bc4a7f9, type: 2}
+  ParticleSparkle: {fileID: 2100000, guid: 1cb49a23ad9251d4f87d976f089d3728, type: 2}
+  ShotArcHeight: 1.4
+  ProjectileSize: 0.95
+  DebrisPerCube: 5
+  DebrisSpeed: 5.5
+  RecoilFrequency: 5.5
+  RecoilDamping: 0.55
+  BodyWaveAmplitude: 0.16
+  ExposedPulse: 0.22
+  UnexposedDarken: 0.1

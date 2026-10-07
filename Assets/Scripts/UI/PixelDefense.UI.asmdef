@@ -1,0 +1,17 @@
+{
+    "name": "PixelDefense.UI",
+    "rootNamespace": "PixelDefense.UI",
+    "references": [
+        "PixelDefense.Services",
+        "UniTask"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,0 +1,139 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:pd="PixelDefense.UI">
+    <ui:Style src="project://database/Assets/UI/Styles/Theme.uss" />
+    <ui:Style src="project://database/Assets/UI/Styles/Game.uss" />
+    <ui:VisualElement name="root" class="root" picking-mode="Ignore">
+        <ui:VisualElement name="vignette" class="vignette" picking-mode="Ignore" />
+        <ui:VisualElement name="safe" class="safe" picking-mode="Ignore">
+            <ui:VisualElement name="hud" class="hud hidden" picking-mode="Ignore">
+                <ui:VisualElement class="hud-top" picking-mode="Ignore">
+                    <ui:Button name="pauseButton" class="round-button">
+                        <pd:IconElement kind="Gear" class="round-button__icon" />
+                    </ui:Button>
+                    <ui:VisualElement class="level-pill" picking-mode="Ignore">
+                        <ui:Label name="levelLabel" text="LEVEL 1" class="level-pill__text" picking-mode="Ignore" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="coin-pill" picking-mode="Ignore">
+                        <pd:IconElement kind="Coin" class="coin-pill__icon" />
+                        <ui:Label name="coinLabel" text="0" class="coin-pill__text" picking-mode="Ignore" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement class="health-row" picking-mode="Ignore">
+                    <pd:IconElement name="dragonIcon" kind="Dragon" tint="#FF7A1A" class="health-row__icon" />
+                    <pd:DragonHealthBar name="healthBar" class="health-row__bar" />
+                </ui:VisualElement>
+                <ui:VisualElement class="booster-row" picking-mode="Ignore">
+                    <ui:VisualElement class="booster-group" picking-mode="Ignore">
+                        <ui:Button name="freezeButton" class="booster booster--freeze">
+                            <pd:IconElement kind="Snowflake" class="booster__icon" />
+                            <ui:Label text="2" class="booster__badge" picking-mode="Ignore" />
+                            <ui:VisualElement class="booster__price booster__price--hidden" picking-mode="Ignore">
+                                <pd:IconElement kind="Coin" class="booster__price-icon" />
+                                <ui:Label text="100" class="booster__price-text" picking-mode="Ignore" />
+                            </ui:VisualElement>
+                        </ui:Button>
+                        <ui:Label text="FREEZE" class="booster__label" picking-mode="Ignore" />
+                        <ui:Button name="bombButton" class="booster booster--bomb">
+                            <pd:IconElement kind="Bomb" class="booster__icon" />
+                            <ui:Label text="2" class="booster__badge" picking-mode="Ignore" />
+                            <ui:VisualElement class="booster__price booster__price--hidden" picking-mode="Ignore">
+                                <pd:IconElement kind="Coin" class="booster__price-icon" />
+                                <ui:Label text="150" class="booster__price-text" picking-mode="Ignore" />
+                            </ui:VisualElement>
+                        </ui:Button>
+                        <ui:Label text="BOMB" class="booster__label" picking-mode="Ignore" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="booster-group" picking-mode="Ignore">
+                        <ui:Button name="slotButton" class="booster booster--slot">
+                            <pd:IconElement kind="Plus" class="booster__icon" />
+                            <ui:Label text="1" class="booster__badge" picking-mode="Ignore" />
+                            <ui:VisualElement class="booster__price booster__price--hidden" picking-mode="Ignore">
+                                <pd:IconElement kind="Coin" class="booster__price-icon" />
+                                <ui:Label text="200" class="booster__price-text" picking-mode="Ignore" />
+                            </ui:VisualElement>
+                        </ui:Button>
+                        <ui:Label text="+SLOT" class="booster__label" picking-mode="Ignore" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:Label name="praise" text="GREAT!" class="praise" picking-mode="Ignore" />
+                <ui:VisualElement name="jamBanner" class="jam-banner jam-banner--hidden" picking-mode="Ignore">
+                    <ui:Label text="SLOTS JAMMED!" class="jam-banner__title" picking-mode="Ignore" />
+                    <ui:Label text="No cannon can hit the dragon's neck. Use a booster!" class="jam-banner__text body-text" picking-mode="Ignore" />
+                </ui:VisualElement>
+                <ui:VisualElement name="tutorial" class="tutorial tutorial--hidden" picking-mode="Ignore">
+                    <ui:Label name="tutorialText" text="Tap a cannon!" class="tutorial__text" picking-mode="Ignore" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement name="home" class="home" picking-mode="Ignore">
+                <ui:Label text="PIXEL" class="title title--top" picking-mode="Ignore" />
+                <ui:Label text="DEFENSE" class="title title--bottom" picking-mode="Ignore" />
+                <ui:Label text="Feed your cannons the right colors before the dragon reaches the base!" class="home__tagline body-text" picking-mode="Ignore" />
+                <ui:VisualElement class="home__spacer" picking-mode="Ignore" />
+                <ui:VisualElement class="home__play" picking-mode="Ignore">
+                    <ui:Label name="homeLevel" text="LEVEL 1" class="home__level" picking-mode="Ignore" />
+                    <ui:Button name="playButton" text="PLAY" class="big-button" />
+                </ui:VisualElement>
+                <ui:VisualElement class="home__bottom" picking-mode="Ignore">
+                    <ui:Button name="homeSettingsButton" class="round-button">
+                        <pd:IconElement kind="Gear" class="round-button__icon" />
+                    </ui:Button>
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="handRing" class="hand-ring hand-ring--hidden" picking-mode="Ignore" />
+        <pd:IconElement name="hand" kind="Hand" class="hand hand--hidden" />
+        <ui:VisualElement name="resultOverlay" class="overlay blocks-input">
+            <ui:VisualElement class="panel">
+                <ui:VisualElement name="resultRibbon" class="panel__ribbon" picking-mode="Ignore">
+                    <ui:Label name="resultTitle" text="VICTORY!" class="panel__title" picking-mode="Ignore" />
+                </ui:VisualElement>
+                <ui:VisualElement name="stars" class="stars" picking-mode="Ignore">
+                    <pd:IconElement name="star1" kind="Star" class="star" />
+                    <pd:IconElement name="star2" kind="Star" class="star star--middle" />
+                    <pd:IconElement name="star3" kind="Star" class="star" />
+                </ui:VisualElement>
+                <ui:Label name="resultMessage" text="The dragon is defeated!" class="panel__message body-text" picking-mode="Ignore" />
+                <ui:VisualElement name="reward" class="reward" picking-mode="Ignore">
+                    <pd:IconElement kind="Coin" class="reward__icon" />
+                    <ui:Label name="rewardLabel" text="+0" class="reward__text" picking-mode="Ignore" />
+                </ui:VisualElement>
+                <ui:Button name="resultPrimary" text="NEXT" class="big-button" />
+                <ui:Button name="resultSecondary" text="HOME" class="text-button" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="settingsOverlay" class="overlay blocks-input">
+            <ui:VisualElement class="panel">
+                <ui:VisualElement class="panel__ribbon panel__ribbon--blue" picking-mode="Ignore">
+                    <ui:Label text="SETTINGS" class="panel__title" picking-mode="Ignore" />
+                </ui:VisualElement>
+                <ui:Button name="soundToggle" class="setting-row">
+                    <pd:IconElement kind="Sound" tint="#4C8DF6" class="setting-row__icon" />
+                    <ui:Label text="SOUND" class="setting-row__label" picking-mode="Ignore" />
+                    <ui:VisualElement class="switch" picking-mode="Ignore">
+                        <ui:VisualElement class="switch__knob" picking-mode="Ignore" />
+                    </ui:VisualElement>
+                </ui:Button>
+                <ui:Button name="musicToggle" class="setting-row">
+                    <pd:IconElement kind="Music" tint="#A160F5" class="setting-row__icon" />
+                    <ui:Label text="MUSIC" class="setting-row__label" picking-mode="Ignore" />
+                    <ui:VisualElement class="switch" picking-mode="Ignore">
+                        <ui:VisualElement class="switch__knob" picking-mode="Ignore" />
+                    </ui:VisualElement>
+                </ui:Button>
+                <ui:Button name="hapticsToggle" class="setting-row">
+                    <pd:IconElement kind="Vibrate" tint="#FF9A2E" class="setting-row__icon" />
+                    <ui:Label text="VIBRATION" class="setting-row__label" picking-mode="Ignore" />
+                    <ui:VisualElement class="switch" picking-mode="Ignore">
+                        <ui:VisualElement class="switch__knob" picking-mode="Ignore" />
+                    </ui:VisualElement>
+                </ui:Button>
+                <ui:VisualElement name="settingsBattleActions" class="panel__actions" picking-mode="Ignore">
+                    <ui:Button name="restartButton" text="RESTART" class="big-button big-button--orange big-button--small" />
+                    <ui:Button name="quitButton" text="HOME" class="big-button big-button--blue big-button--small" />
+                </ui:VisualElement>
+                <ui:Button name="settingsClose" class="close-button">
+                    <pd:IconElement kind="Close" class="close-button__icon" />
+                </ui:Button>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

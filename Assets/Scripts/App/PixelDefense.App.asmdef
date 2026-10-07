@@ -1,0 +1,21 @@
+{
+    "name": "PixelDefense.App",
+    "rootNamespace": "PixelDefense.App",
+    "references": [
+        "PixelDefense.Core",
+        "PixelDefense.Services",
+        "PixelDefense.Gameplay",
+        "PixelDefense.UI",
+        "UniTask",
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,0 +1,190 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 853e6aad624ef5e439cbd68e08a42878, type: 3}
+  m_Name: AudioLibrary
+  m_EditorClassIdentifier: PixelDefense.Services::PixelDefense.Services.Audio.AudioLibrary
+  _entries:
+  - Id: pop
+    Clips:
+    - {fileID: 8300000, guid: e2265c50a2ff2ad4aa80ee810e00735b, type: 3}
+    - {fileID: 8300000, guid: bde4c1ee3c700774c9b8911707420a75, type: 3}
+    - {fileID: 8300000, guid: c0b72fa932d88df4687bce1770518da2, type: 3}
+    Volume: 0.5
+    PitchRange: {x: 0.97, y: 1.03}
+    MaxVoices: 6
+    Cooldown: 0.022
+  - Id: shoot
+    Clips:
+    - {fileID: 8300000, guid: 141568e581df44c47806400c5fecaf3c, type: 3}
+    - {fileID: 8300000, guid: 31320ab8098cefa42b4498b8da17f202, type: 3}
+    Volume: 0.3
+    PitchRange: {x: 0.92, y: 1.08}
+    MaxVoices: 5
+    Cooldown: 0.02
+  - Id: tap
+    Clips:
+    - {fileID: 8300000, guid: fddd11b0cfc5689409493ce48dd76af7, type: 3}
+    Volume: 0.6
+    PitchRange: {x: 0.95, y: 1.05}
+    MaxVoices: 2
+    Cooldown: 0.03
+  - Id: ui
+    Clips:
+    - {fileID: 8300000, guid: 213caa7cb03050d4db326210aa0657d4, type: 3}
+    Volume: 0.55
+    PitchRange: {x: 0.97, y: 1.03}
+    MaxVoices: 2
+    Cooldown: 0.03
+  - Id: jump
+    Clips:
+    - {fileID: 8300000, guid: 1d6c51a3f9ff061428f414a9e0b05514, type: 3}
+    Volume: 0.45
+    PitchRange: {x: 0.95, y: 1.1}
+    MaxVoices: 3
+    Cooldown: 0.03
+  - Id: land
+    Clips:
+    - {fileID: 8300000, guid: f74f9428f83b3a84aa8a27901eb2b4f4, type: 3}
+    Volume: 0.6
+    PitchRange: {x: 0.9, y: 1.05}
+    MaxVoices: 3
+    Cooldown: 0.03
+  - Id: crunch
+    Clips:
+    - {fileID: 8300000, guid: 49e091335094c094bb3c58ffcc5ca755, type: 3}
+    - {fileID: 8300000, guid: c77e69b96b1c8334694697e48af47ca2, type: 3}
+    Volume: 0.32
+    PitchRange: {x: 0.9, y: 1.1}
+    MaxVoices: 3
+    Cooldown: 0.05
+  - Id: empty
+    Clips:
+    - {fileID: 8300000, guid: 2be5454eb1a05b14ca9bb48a326f687b, type: 3}
+    Volume: 0.42
+    PitchRange: {x: 0.98, y: 1.04}
+    MaxVoices: 3
+    Cooldown: 0.05
+  - Id: poof
+    Clips:
+    - {fileID: 8300000, guid: fd816ed5d58d14d4b9baecfee67f6043, type: 3}
+    Volume: 0.45
+    PitchRange: {x: 0.95, y: 1.05}
+    MaxVoices: 3
+    Cooldown: 0.05
+  - Id: deny
+    Clips:
+    - {fileID: 8300000, guid: 36d996875f28dfa48ac852a2449ef25c, type: 3}
+    Volume: 0.6
+    PitchRange: {x: 1, y: 1}
+    MaxVoices: 1
+    Cooldown: 0.15
+  - Id: reveal
+    Clips:
+    - {fileID: 8300000, guid: c679f795ceac5a943b6bd2863654a626, type: 3}
+    Volume: 0.5
+    PitchRange: {x: 1, y: 1.05}
+    MaxVoices: 2
+    Cooldown: 0.05
+  - Id: roar
+    Clips:
+    - {fileID: 8300000, guid: a3e5faa98b36f654ba0ce3a760adf4fe, type: 3}
+    Volume: 0.85
+    PitchRange: {x: 0.95, y: 1.05}
+    MaxVoices: 1
+    Cooldown: 0.3
+  - Id: hurt
+    Clips:
+    - {fileID: 8300000, guid: 5f68656ff45e22c4081f6b71bcdb627e, type: 3}
+    - {fileID: 8300000, guid: 2b5d56fb3caafc944852f6dcf48f6e8c, type: 3}
+    Volume: 0.55
+    PitchRange: {x: 0.95, y: 1.1}
+    MaxVoices: 1
+    Cooldown: 0.2
+  - Id: warning
+    Clips:
+    - {fileID: 8300000, guid: 8c1d9d7cd4d802446a2dede7843332b3, type: 3}
+    Volume: 0.42
+    PitchRange: {x: 1, y: 1}
+    MaxVoices: 1
+    Cooldown: 0.2
+  - Id: heartbeat
+    Clips:
+    - {fileID: 8300000, guid: 00259bd629525134ea7acfd96642b127, type: 3}
+    Volume: 0.7
+    PitchRange: {x: 1, y: 1}
+    MaxVoices: 1
+    Cooldown: 0.2
+  - Id: chime
+    Clips:
+    - {fileID: 8300000, guid: 2e5629cde0853394d83132d03b1adb71, type: 3}
+    Volume: 0.5
+    PitchRange: {x: 1, y: 1}
+    MaxVoices: 2
+    Cooldown: 0.1
+  - Id: explosion
+    Clips:
+    - {fileID: 8300000, guid: 493d4add4f684a749b07c5194ef9dff2, type: 3}
+    Volume: 0.85
+    PitchRange: {x: 0.95, y: 1.05}
+    MaxVoices: 2
+    Cooldown: 0.1
+  - Id: win
+    Clips:
+    - {fileID: 8300000, guid: e6b9f8e54160c0347b83465f197f86ea, type: 3}
+    Volume: 0.62
+    PitchRange: {x: 1, y: 1}
+    MaxVoices: 1
+    Cooldown: 0.5
+  - Id: lose
+    Clips:
+    - {fileID: 8300000, guid: 5b587ae042ddde3498d788e3559fec46, type: 3}
+    Volume: 0.6
+    PitchRange: {x: 1, y: 1}
+    MaxVoices: 1
+    Cooldown: 0.5
+  - Id: freeze
+    Clips:
+    - {fileID: 8300000, guid: 76edcec864859bc4997578d6ab4605b7, type: 3}
+    Volume: 0.6
+    PitchRange: {x: 1, y: 1}
+    MaxVoices: 1
+    Cooldown: 0.2
+  - Id: bomb
+    Clips:
+    - {fileID: 8300000, guid: 68df7b5a8258e484281cf2147e094b20, type: 3}
+    Volume: 0.8
+    PitchRange: {x: 1, y: 1}
+    MaxVoices: 1
+    Cooldown: 0.2
+  - Id: slot
+    Clips:
+    - {fileID: 8300000, guid: 90c4d73a47dcbeb41877fe2303e33434, type: 3}
+    Volume: 0.6
+    PitchRange: {x: 1, y: 1}
+    MaxVoices: 1
+    Cooldown: 0.2
+  - Id: whoosh
+    Clips:
+    - {fileID: 8300000, guid: 247446bd5d20b494bafb295a3ae88256, type: 3}
+    Volume: 0.5
+    PitchRange: {x: 1, y: 1}
+    MaxVoices: 1
+    Cooldown: 0.3
+  - Id: coin
+    Clips:
+    - {fileID: 8300000, guid: e1851b7a843063b4893298083e62e875, type: 3}
+    Volume: 0.55
+    PitchRange: {x: 1, y: 1.05}
+    MaxVoices: 2
+    Cooldown: 0.05
+  _music: {fileID: 8300000, guid: 2f6e3af681ec18a4c85f740425e6a37d, type: 3}
+  _musicVolume: 0.35

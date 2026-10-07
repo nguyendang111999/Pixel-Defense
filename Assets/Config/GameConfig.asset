@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a958638f3b9bdf488af3406bf1808b2, type: 3}
+  m_Name: GameConfig
+  m_EditorClassIdentifier: PixelDefense.App::PixelDefense.App.GameConfig
+  LevelPack: {fileID: 4900000, guid: 5b2935a77f1288546a6aa31f4de051bc, type: 3}
+  Visuals: {fileID: 11400000, guid: 40226f5ba87f5874d925fbaf17e70e64, type: 2}
+  Audio: {fileID: 11400000, guid: 86b24f970aff99341a1b440ab9285c95, type: 2}
+  Battle:
+    FireInterval: 0.12
+    ShotFlightTime: 0.26
+    DeployDuration: 0.42
+    LeaveDelay: 0.32
+    ContactLoseTime: 2
+    HeadLength: 7.37
+    RecoilFraction: 0.35
+    DangerZone: 10
+    DangerSpeedFactor: 0.55
+    EnrageFraction: 0.2
+    EnrageSpeedFactor: 1.35
+    JamGraceTime: 1.6
+    JamSpeedFactor: 5
+    FreezeDuration: 5
+    BombSlices: 4
+    MaxSlots: 6
+    MaxStep: 0.016666668
+  StartCoins: 150
+  StartFreeze: 2
+  StartBomb: 2
+  StartSlot: 1
+  FreezePrice: 100
+  BombPrice: 150
+  SlotPrice: 200
+  BaseReward: 20
+  RewardPerStar: 10
+  LoopLastLevels: 10

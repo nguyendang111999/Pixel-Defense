@@ -1,0 +1,25 @@
+{
+    "name": "PixelDefense.EditorTools",
+    "rootNamespace": "PixelDefense.EditorTools",
+    "references": [
+        "PixelDefense.Core",
+        "PixelDefense.Services",
+        "PixelDefense.Gameplay",
+        "PixelDefense.UI",
+        "PixelDefense.App",
+        "Unity.RenderPipelines.Core.Runtime",
+        "Unity.RenderPipelines.Universal.Runtime",
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

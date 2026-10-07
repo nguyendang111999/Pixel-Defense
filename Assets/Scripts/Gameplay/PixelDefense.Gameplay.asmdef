@@ -1,0 +1,22 @@
+{
+    "name": "PixelDefense.Gameplay",
+    "rootNamespace": "PixelDefense.Gameplay",
+    "references": [
+        "PixelDefense.Core",
+        "PixelDefense.Services",
+        "UniTask",
+        "UniTask.DOTween",
+        "DOTween.Modules",
+        "Unity.RenderPipelines.Core.Runtime",
+        "Unity.RenderPipelines.Universal.Runtime"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
