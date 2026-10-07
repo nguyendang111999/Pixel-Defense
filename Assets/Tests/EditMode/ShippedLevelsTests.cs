@@ -51,6 +51,33 @@ namespace PixelDefense.Tests.EditMode
             }
         }
 
+        [Test]
+        public void MainPack_CannonsCarryTenTwentyOrFortyAmmo()
+        {
+            foreach (LevelDefinition level in Pack.Levels)
+            {
+                for (int c = 0; c < level.ColumnCount; c++)
+                {
+                    for (int d = 0; d < level.ColumnLength(c); d++)
+                    {
+                        int ammo = level.Cannon(c, d).Ammo;
+                        Assert.That(ammo == 10 || ammo == 20 || ammo == 40, Is.True, level.Id + " has a cannon with " + ammo + " ammo");
+                    }
+                }
+            }
+        }
+
+        [Test]
+        public void MainPack_UsesManyTrackShapes()
+        {
+            var shapes = new HashSet<string>();
+            foreach (LevelDefinition level in Pack.Levels)
+            {
+                shapes.Add(level.Track.Replace("_cw", string.Empty));
+            }
+            Assert.That(shapes.Count, Is.GreaterThanOrEqualTo(5), string.Join(", ", shapes));
+        }
+
         [TestCaseSource(nameof(LevelIds))]
         public void Level_IsSolvableAndBeatableByCarefulPlayer(string id)
         {

@@ -18,14 +18,16 @@ MonoBehaviour:
   HeadVoxel: 0.5
   NeckGap: 0.62
   WallHeight: 1.15
-  SlotSize: 2.65
-  SlotGap: 0.42
+  SlotSize: 3.1
+  SlotGap: 0.9
+  SlotRowFill: 0.91
   ColumnSpacing: 5.4
   RowSpacing: 4.7
   ColumnsGap: 1.6
   VisibleRows: 3
   CannonSize: 4.5
-  SlotCannonSize: 3
+  SlotCannonSize: 2.7
+  SeatPitchFill: 0.68
   ScaleColors:
   - {r: 0.9490196, g: 0.27058825, b: 0.23921569, a: 1}
   - {r: 1, g: 0.54901963, b: 0.12156863, a: 1}

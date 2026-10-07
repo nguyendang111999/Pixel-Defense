@@ -37,9 +37,17 @@ MonoBehaviour:
   StartFreeze: 2
   StartBomb: 2
   StartSlot: 1
+  StartPick: 2
   FreezePrice: 100
   BombPrice: 150
   SlotPrice: 200
+  PickPrice: 120
   BaseReward: 20
   RewardPerStar: 10
   LoopLastLevels: 10
+  BotSpeeds:
+  - 1
+  - 2
+  - 4
+  BotResultPause: 1.5
+  BotRetries: 2

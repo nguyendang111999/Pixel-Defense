@@ -9,8 +9,6 @@ namespace PixelDefense.Gameplay
     /// </summary>
     public sealed class ArenaSpace
     {
-        private const float MaxSlotRowWidth = 15.0f;
-
         private readonly VisualConfig _config;
 
         public ArenaSpace(TrackShape track, VisualConfig config, Vector3 origin)
@@ -24,8 +22,6 @@ namespace PixelDefense.Gameplay
         public TrackShape Track { get; }
         public float Scale { get; }
         public Vector3 Origin { get; }
-
-        public float ArenaRadiusWorld => Track.ArenaRadius * Scale;
 
         public Vector3 ToWorld(float x, float y, float height = 0f)
         {
@@ -46,10 +42,19 @@ namespace PixelDefense.Gameplay
             return (lane - (lanes - 1) * 0.5f) * Scale;
         }
 
+        /// <summary>Slot pad size (slice units): as large as configured while the whole row fits on the platform.</summary>
         public float SlotSize(int slotCount)
         {
-            float fit = (MaxSlotRowWidth - (slotCount - 1) * _config.SlotGap) / slotCount;
+            float maxRow = Track.BaseRadius * 2f * _config.SlotRowFill;
+            float fit = (maxRow - (slotCount - 1) * _config.SlotGap) / slotCount;
             return Mathf.Min(_config.SlotSize, fit);
+        }
+
+        /// <summary>Seated cannon size (slice units): more slots make a tighter row, so the cannons on it shrink.</summary>
+        public float SeatedCannonSize(int slotCount)
+        {
+            float pitch = SlotSize(slotCount) + _config.SlotGap;
+            return Mathf.Min(_config.SlotCannonSize, pitch * _config.SeatPitchFill);
         }
 
         public Vector3 SlotPosition(int index, int slotCount, float height)
@@ -60,8 +65,8 @@ namespace PixelDefense.Gameplay
             return ToWorld(x, 0f, height);
         }
 
-        /// <summary>Z (slice units) of the front row of cannon columns.</summary>
-        public float ColumnsFrontY => -Track.ArenaRadius - _config.ColumnsGap - _config.CannonSize * 0.5f;
+        /// <summary>Z (slice units) of the front row of cannon columns, just below the arena.</summary>
+        public float ColumnsFrontY => Track.ArenaMinY - _config.ColumnsGap - _config.CannonSize * 0.5f;
 
         public Vector3 ColumnPosition(int column, int columnCount, int row)
         {

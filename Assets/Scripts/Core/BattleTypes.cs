@@ -13,7 +13,10 @@ namespace PixelDefense.Core
         NotPlaying,
         InvalidColumn,
         EmptyColumn,
-        SlotsFull
+        SlotsFull,
+
+        /// <summary>The cannon id is invalid or that cannon already left its column.</summary>
+        Unavailable
     }
 
     public enum SlotPhase

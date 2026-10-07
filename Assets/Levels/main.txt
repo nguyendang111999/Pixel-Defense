@@ -13,9 +13,9 @@ start 18
 width 3
 window 3
 slots 5
-body O*8 G*6
-col O12 G9
-col O12 G9
+body O*10 G*10
+col O20 G10
+col O10 G20
 end
 
 level L02
@@ -28,75 +28,75 @@ start 40
 width 3
 window 3
 slots 5
-body O*8 R*8 O*10 K*9 R*4
-col O9 O15 R9 K15
-col O15 R18 O15 K12 R9
+body O*8 R*5 O*12 K*10 R*5
+col O10 K20 O20 K10
+col O10 O20 R20 R10
 end
 
 level L03
 name Coil Crawler
-track square
+track hairpin
 skin frost
-speed 4.49
+speed 3.87
 start 40
 width 3
 window 3
 slots 5
-body O*9 B*5 O*4 B*4 C*8 O*4 B*8
-col B18 O9 C9
-col O9 B15 B9
-col O24 C15 O9 B9
+body O*12 B*5 O*4 B*4 C*10 O*4 B*11
+col O10 B20 B20
+col O10 O10 O10
+col O20 C20 C10 B20
 end
 
 level L04
 name Slot Squeeze
-track spiral
+track snake
 skin venom
 tutorial slots
-speed 4.47
+speed 4.28
 start 40
 width 3
 window 3
 slots 5
-body L*9 K*10 P*5 K*6 L*5 P*10
-col L18 P9 P9
-col L24 K21 P9
-col K15 K12 P18
+body L*5 K*14 P*5 K*6 L*5 P*15
+col L20 K20 P20
+col K10 P20 L10 P10
+col K10 K10 K10 P10
 end
 
 level L05
 name Golden Hoard (Boss)
-track spiral_long
+track square
 skin gold
 speed 4.49
 start 40
 width 3
 window 3
 slots 5
-body Y*13 C*9 Y*7 C*11 L*12 Y*8
-col Y27 Y30 Y15
-col Y12 C12 L24
-col C36 C12 L12
+body Y*13 C*9 Y*7 C*11 L*10 Y*20
+col Y40 L10 L10 Y20
+col Y40 C20 L10
+col Y10 C40 Y10
 end
 
 level L06
 name Striped Menace
-track spiral_cw
+track zigzag
 skin jade
-speed 4.49
+speed 3.49
 start 40
 width 3
 window 2
 slots 5
-body CPC*14 C*9 LCL*4 P*4 C*7 L*8 LOL*5
-col C33 C17
-col P26 L33 O5
-col L9 C30
+body P*5 R*4 O*6 P*13 W*6 PRP*12 O*4 P*4 W*4 R*12
+col R10 P20 O10 W10
+col R20 P20 P20 P10 R10
+col P20 O20 W20 R20
 end
 
 level L07
 name Jade Serpent
-track spiral
+track square
 skin frost
 tutorial boosters
 speed 4.49
@@ -104,305 +104,297 @@ start 40
 width 3
 window 2
 slots 5
-body C*4 B*12 W*11 C*7 B*13 WOW*7
-col W21 B24
-col B36 W14 B15
-col C33 W12 O7
+body C*4 O*9 B*12 W*8 C*6 B*18 WOW*13
+col O20 W40 W10 B20
+col O20 B10 B20
+col C20 B40 C10
 end
 
 level L08
 name Mystery Cannons
-track spiral_cw
+track hairpin_cw
 skin venom
 tutorial hidden
-speed 4.49
+speed 3.03
 start 40
 width 3
 window 2
 slots 5
-body R*5 YLY*8 P*5 LRL*10 R*6 Y*13 P*5 R*6
-col R9 ?P9 R12 R16
-col Y12 R24 P9 Y13
-col L28 Y9 Y21 P12
+body R*5 YLY*8 P*5 LRL*10 R*10 L*4 Y*12 P*5 R*5 Y*6
+col R10 ?Y20 ?L10 Y20 ?Y10
+col R10 P20 L10 Y10 Y10 R10
+col L20 R20 ?R20 P10
 end
 
 level L09
 name Frost Wyrm
-track square
+track snake_cw
 skin ember
-speed 4.49
+speed 3.10
 start 40
 width 3
 window 2
 slots 5
-body O*5 B*4 P*14 O*14 B*14 LPL*10
-col P21 O9 L11
-col B33 ?B9
-col O33 B12 ?L9
-col O15 P31
+body O*5 B*4 P*11 O*16 B*16 LPL*7 L*12 O*9
+col O20 P20 O20 L20
+col B40 O10 B10
+col P20 B10 ?L20 ?L10
+col O10 O20 O10
 end
 
 level L10
 name Shadow Wyrm (Boss)
-track spiral_long
+track spiral_cw
 skin shadow
-speed 4.49
+speed 3.73
 start 40
 width 3
 window 2
 slots 5
-body GKG*6 Y*10 G*7 KOK*12 CYC*5 C*9 G*8 GOG*5 YGY*11 C*7
-col G9 G12 Y15
-col K15 C24 ?G33 C9
-col K15 O17 C12
-col G24 Y33 Y9 C13
+body GKG*6 Y*11 G*7 KOK*12 CYC*5 C*9 G*6 GOG*5 YGY*11 O*11 C*11 G*6 K*10
+col K20 G20 K20 C10
+col O40 Y40 ?G10 ?C20
+col G40 C20 Y20
+col K10 C20 G20 O10 K10
 end
 
 level L11
 name Ember Ribbon
-track square_cw
+track zigzag_cw
 skin frost
-speed 4.49
+speed 3.25
 start 40
 width 3
 window 2
 slots 5
-body C*7 R*7 L*6 B*10 W*4 RCR*5 L*9 LBL*7 W*12
-col B27 L17 L21
-col L9 W15 W9 W15
-col C26 L12
-col R31 B10 W9
+body C*13 R*6 L*6 B*11 W*4 RCR*5 L*6 LBL*7 W*16 RCR*6
+col B20 W40 R10
+col B10 ?B10 ?W20
+col R20 L10 R10
+col C40 L40 C10
 end
 
 level L12
 name Venom Loop
-track spiral_cw
+track spiral
 skin venom
-speed 4.29
+speed 3.68
 start 40
 width 3
 window 2
 slots 5
-body C*8 WLW*14 BWB*9 CPC*5 BLB*8 C*4 O*6 L*12 W*4
-col L12 L21 C10 L12
-col B18 C9 B16 O18
-col C27 W13 ?L13
-col W21 W15 ?P5
+body C*6 WLW*14 BWB*9 CPC*5 BLB*8 C*4 B*12 O*10 L*16 W*11 P*5
+col W10 C20 B20 P10
+col B10 B20 O20 ?L10
+col W20 W20 P10 W20 L20
+col C20 L40 B20 ?O10
 end
 
 level L13
 name Rainbow Tail
-track spiral
+track snake
 skin ember
-speed 4.42
+speed 3.43
 start 40
 width 3
 window 2
 slots 5
-body W*8 R*10 RYR*9 K*14 WOW*7 W*7 GRG*4 Y*10 G*4
-col R12 W33 W14
-col R12 W12 O7
-col R28 Y39 G20
-col K42
+body W*5 R*6 RYR*9 K*10 WOW*7 W*7 GRG*4 Y*7 G*14 O*11
+col R10 ?K10 K10 G40
+col W40 ?K10 Y20
+col W10 ?R10 R10 G10
+col R10 Y10 O40
 end
 
 level L14
 name Tight Corners
-track spiral_cw
+track square_cw
 skin jade
-speed 4.32
+speed 4.24
 start 40
 width 3
 window 2
 slots 5
-body KCK*9 WCW*11 B*10 O*6 L*4 K*4 B*12 W*4 O*16
-col W18 W16 O9
-col C9 O9 B33
-col K30 B33 L12 O9
-col C11 O39
+body KCK*9 WCW*11 B*10 C*10 O*6 L*6 K*4 B*10 W*6 O*14 L*4 K*10
+col C20 L20 ?K10
+col K40 C20 B10
+col K10 B10 C10 ?O20
+col W40 B40 O40 L10
 end
 
 level L15
 name Molten Monarch (Boss)
-track spiral_long
+track snake
 skin gold
-speed 4.49
+speed 2.82
 start 40
 width 3
 window 2
 slots 5
-body L*10 B*13 ROR*12 O*4 LGL*7 B*11 R*10 OBO*8 GLG*7 G*10 R*7
-col L33 ?R42 ?L9
-col B21 O27 B15 G18
-col B18 L9 O13 G9
-col B9 G15 R33 B17 G9
+body L*13 B*13 ROR*12 O*4 LGL*7 B*11 R*10 OBO*8 GLG*7 G*13 R*12 K*10
+col L20 R20 ?L20 G20 ?R10
+col B20 R40 K20 ?G10
+col L10 B40 ?O40 B10 R20
+col L10 G20 B10 G10 K10
 end
 
 level L16
 name Copper Coil
-track spiral
+track spiral_cw
 skin venom
-speed 3.57
+speed 3.34
 start 40
 width 3
 window 2
 slots 5
-body G*11 BYB*9 W*12 YRY*5 YWY*4 BGB*9 BYB*5 W*6 P*5 R*11 Y*5
-col Y21 B12 B19 W10
-col B15 R38 ?W12
-col W36 ?G12 Y17
-col G30 Y9 P15
+body G*9 BYB*9 W*16 YRY*5 B*8 YWY*4 BGB*9 BYB*5 W*6 P*10 R*15 Y*12 GYG*12
+col W40 W10 B20 Y20 ?G10
+col Y10 R40 Y20 P20 Y10
+col G20 Y20 B10 R10
+col G20 B40 W20 P10 G10
 end
 
 level L17
 name Glacier Glide
-track square_cw
+track hairpin
 skin ember
-speed 4.37
+speed 2.16
 start 40
 width 3
 window 2
 slots 5
-body C*12 W*5 O*4 WPW*9 G*7 WCW*5 W*5 Y*4 GOG*11 P*13 C*10
-col O9 G28 ?W25
-col C27 W9 P9
-col C12 O14 C32 P12
-col W24 ?G15 Y12 ?P27
+body BRB*4 YPY*11 B*4 O*9 P*11 R*14 PGP*12 ORO*9 P*4 R*5 Y*16 G*6 O*5
+col P20 O20 R20 O10 P10 Y20
+col B20 P10 Y10 ?R40 ?P20
+col Y10 Y10 G10 O20 ?G20 O10
+col R10 ?P20 Y10 ?Y10
 end
 
 level L18
 name Twin Stripes
-track spiral_cw
+track zigzag
 skin jade
-speed 3.87
+speed 2.80
 start 40
 width 3
 window 2
 slots 5
-body BOB*12 R*12 RCR*14 O*7 Y*14 B*13 R*16
-col O9 Y42 R36
-col B21 R27 O15
-col B21 R24 ?B21
-col R15 C14
-col O9 R10
+body BOB*12 R*12 RCR*14 O*6 C*12 Y*10 B*12 R*12 G*10 CGC*10
+col R40 ?C20 O10 R10 G20
+col B20 ?O10 ?C10 Y20 G20
+col B20 R20 Y10 ?R10 B20
+col O10 ?R10 ?C40 ?R10
 end
 
 level L19
 name Hydra Neck
-track spiral
+track snake_cw
 skin frost
-speed 3.49
+speed 3.01
 start 40
 width 3
 window 2
 slots 5
-body R*13 BPB*8 CBC*9 GRG*13 GPG*11 B*6 Y*7 GCG*7 R*11 P*7
-col R18 C16 R18 P13
-col R33 B10 Y9
-col P27 C9 G24 G11
-col B9 B12 Y12
-col B12 G27 R16
+body R*18 BPB*8 CBC*9 GRG*13 GPG*11 B*5 Y*10 GCG*7 R*11 G*6 P*7 C*10 YCY*5
+col B20 G20
+col R40 G20 Y40 C20
+col P40 C40 G40 B10
+col R20 B10 R40
 end
 
 level L20
 name Obsidian Emperor (Boss)
-track spiral_long
+track square_cw
 skin shadow
-speed 4.49
+speed 3.22
 start 40
 width 3
 window 2
 slots 5
-body O*14 KBK*4 C*5 P*8 O*12 BPB*10 KOK*9 PCP*6 P*14 O*9 B*13 C*14
-col K12 C9 ?O30
-col O12 ?O15 ?P37 O9
-col O15 O15 K14 O9
-col C18 P15 O9 C36 ?B15
-col B27 P9 P27 B21
+body O*16 KBK*4 C*5 P*8 O*12 BPB*10 KOK*9 PCP*6 P*18 K*13 O*9 B*13 Y*11 C*13 PKP*5 BYB*7 B*11
+col B40 ?O20 P40 K20 K10 B20 ?B10
+col O10 O10 P40 K20 Y40
+col K10 C40 O20 ?K10 O10 B40
+col O20 O20 P10 P20 O10 C20
 end
 
 level L21
 name Pixel Python
-track square
+track snake
 skin ember
-speed 4.49
+speed 3.11
 start 40
 width 3
 window 2
 slots 5
-body KCK*4 R*10 W*11 G*9 C*6 K*5 CWC*9 RGR*7 CKC*12 CKC*9 WRW*4 RGR*6 RCR*6
-col K44 R30
-col C27 G40 ?C27
-col C9 R15
-col W39 W11 R27
-col C12 C13
+body KCK*4 R*6 W*7 G*9 C*12 K*7 CWC*9 RGR*7 CKC*12 CKC*9 WRW*4 RGR*6 RCR*10 L*10 R*4 W*4
+col W20 C20 ?C40 R20
+col K40 C10 C40 W10
+col R20 ?R40 ?L10 L10
+col W20 G40 K10 ?L10
 end
 
 level L22
 name Lantern Drake
-track spiral
+track square
 skin jade
-speed 3.51
+speed 3.28
 start 40
 width 3
 window 2
 slots 5
-body K*7 ROR*6 L*13 CRC*14 R*10 K*7 RGR*13 O*6 L*10 C*4 R*11
-col O24 L9 L9
-col C12 R42 ?K9 C10
-col R42 ?C9 G13 ?R21
-col L33 C9 R10
-col K24 K9 ?L9 L9
+body P*6 W*7 KLK*7 L*14 PBP*6 P*12 W*13 K*17 WLW*11 B*8 G*10 WPW*4 K*5
+col W10 P10 P20 K40
+col P40 L10 B20 W10 ?G10
+col W20 W40 ?L10 ?B10 G10
+col K20 ?L40 K20 ?W10 G10
 end
 
 level L23
 name Crystal Coil
-track square_cw
+track spiral
 skin frost
-speed 4.32
+speed 3.46
 start 40
 width 3
 window 2
 slots 5
-body L*5 WCW*14 B*13 Y*10 C*6 YLY*5 KCK*12 B*10 Y*10 C*11 CLC*8
-col W18 L13 ?Y31
-col C21 ?B12
-col L15 B39 ?B18
-col W10 C45 K24
-col Y39 C27
+body L*11 WCW*14 B*10 Y*10 C*6 YLY*5 KCK*12 B*10 Y*10 C*14 CLC*12 K*12 W*4
+col L10 ?W40 ?Y40 C10
+col L40 ?B20 B10 ?C10 C10
+col B10 B20 ?C40
+col C40 K40 ?Y20 Y10 K20
 end
 
 level L24
 name Thunder Tail
-track spiral_cw
+track zigzag_cw
 skin venom
-speed 3.61
+speed 2.41
 start 40
 width 3
 window 2
 slots 5
-body Y*7 W*10 YCY*10 O*13 BYB*6 Y*7 CRC*9 R*5 BOB*14 BYB*10 W*12 C*4
-col Y39 Y9 ?Y12
-col W9 ?O30 C25
-col Y18 B18 R15 B9
-col W27 R9 B18 ?W30
-col C15 ?O9 O14 B15
+body Y*11 W*10 YCY*10 O*12 BYB*6 Y*7 B*10 CRC*9 R*5 BOB*14 BYB*10 W*10 C*4 R*12
+col Y10 ?O20 B20 B10 W10 R10
+col C20 W10 B20 ?Y20 R40 ?C10
+col Y20 ?W20 O20 C10 B10 W20
+col Y20 ?Y20 R10 ?B10 O10 B20
 end
 
 level L25
 name Ancient Horror (Boss)
-track spiral_long
+track spiral
 skin gold
-speed 4.49
+speed 2.52
 start 40
 width 3
 window 2
 slots 5
-body COC*7 C*11 WPW*4 W*4 O*12 L*11 P*8 WRW*10 R*8 ORO*6 C*13 P*4 RCR*14 ORO*11 C*15
-col P12 R42 C42 ?C27
-col C24 ?O15 R15 C13
-col W12 L15 P16 W13 O20
-col W15 C27 L18 C12
-col O42 P12 ?R9 R13
+body L*10 KRK*10 K*17 KCK*10 B*5 L*16 R*9 K*14 CLC*13 OBO*11 LRL*8 R*5 K*9 C*8 O*6 LBL*14 CLC*15
+col R20 L20 K20 B20 L20 C40
+col L20 C40 R10 L20 B10 ?K20 L40
+col K10 ?K10 L20 L10 K40 O20 ?C10
+col K20 ?K20 ?K20 ?R20 O20 R10 ?B10
 end
 

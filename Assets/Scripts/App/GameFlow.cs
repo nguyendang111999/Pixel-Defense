@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using PixelDefense.Core;
@@ -17,7 +18,8 @@ namespace PixelDefense.App
 {
     /// <summary>
     /// Composition root and game state machine: Home → Playing → Result. Wires services, battle and UI, owns
-    /// progress, the booster economy and tutorial prompts.
+    /// progress, the booster economy and tutorial prompts. In the Editor and development builds it also runs the
+    /// autoplay bot (pause menu, or B / N keys) which plays on through the campaign and logs each result.
     /// </summary>
     public sealed class GameFlow : MonoBehaviour
     {
@@ -46,6 +48,11 @@ namespace PixelDefense.App
         private Vector2Int _screen;
         private float _tutorialTimer;
         private bool _tutorialDeployed;
+        private bool _canPick;
+        private bool _bot;
+        private int _botSpeed;
+        private int _botLosses;
+        private CancellationTokenSource _botNext;
 
         private enum State
         {
@@ -110,11 +117,23 @@ namespace PixelDefense.App
             _ui.Settings.SoundToggled += () => { _settings.Sound = !_settings.Sound; ApplySettings(); };
             _ui.Settings.MusicToggled += () => { _settings.Music = !_settings.Music; ApplySettings(); };
             _ui.Settings.HapticsToggled += () => { _settings.Haptics = !_settings.Haptics; ApplySettings(); };
+            _ui.Hud.PickCancelClicked += () => _battle.CancelPick();
 
             _battle.Finished += OnBattleFinished;
             _battle.Praise += (text, color) => _ui.Hud.ShowPraise(text, color);
             _battle.JamChanged += jammed => _ui.Hud.SetJammed(jammed);
             _battle.Deployed += OnDeployed;
+            _battle.PickModeChanged += picking => _ui.Hud.SetPicking(picking);
+            _battle.PickPlaced += OnPickPlaced;
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            _ui.Settings.ShowDebug(true);
+            _ui.Settings.BotToggled += ToggleBot;
+            _ui.Settings.SpeedClicked += CycleBotSpeed;
+            RefreshBotUi();
+#else
+            _ui.Settings.ShowDebug(false);
+#endif
         }
 
         private void LoadProgress()
@@ -126,8 +145,15 @@ namespace PixelDefense.App
                     Coins = _config.StartCoins,
                     Freeze = _config.StartFreeze,
                     Bomb = _config.StartBomb,
-                    Slot = _config.StartSlot
+                    Slot = _config.StartSlot,
+                    Pick = _config.StartPick
                 };
+            }
+            else if (_progress.Version < 2)
+            {
+                // Saves from before the pick booster start with the same free picks as a new player.
+                _progress.Pick = _config.StartPick;
+                _progress.Version = ProgressData.CurrentVersion;
             }
 
             _levelIndex = Mathf.Max(0, string.IsNullOrEmpty(_progress.CurrentLevelId) ? 0 : _pack.IndexOf(_progress.CurrentLevelId));
@@ -164,7 +190,8 @@ namespace PixelDefense.App
 
         private void EnterHome()
         {
-            Time.timeScale = 1f;
+            CancelBotNext();
+            Time.timeScale = _battle.SpeedMultiplier;
             _paused = false;
             _state = State.Home;
             _ui.Result.Hide();
@@ -193,7 +220,8 @@ namespace PixelDefense.App
 
         private void StartLevel(bool slitherIn)
         {
-            Time.timeScale = 1f;
+            CancelBotNext();
+            Time.timeScale = _battle.SpeedMultiplier;
             _paused = false;
             _ui.Result.Hide();
             _ui.Settings.Hide();
@@ -209,10 +237,12 @@ namespace PixelDefense.App
             _tutorialDeployed = false;
             _tutorialTimer = 0f;
             _ui.ShowHud(true);
-            _ui.Hud.SetLevel(_progress.LevelNumber);
+            _ui.Hud.SetLevel(_progress.LevelNumber, _bot ? "BOT" : null);
             _ui.Hud.SetCoins(_progress.Coins);
             _ui.Hud.SetDragonColor(_battle.DragonColor);
             _ui.Hud.SetJammed(false);
+            _ui.Hud.SetPicking(false);
+            _canPick = true;
             RefreshBoosters();
             ShowTutorialIntro();
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
@@ -260,6 +290,7 @@ namespace PixelDefense.App
 
         private void OnBattleFinished(BattleResult result)
         {
+            LevelDefinition finished = CurrentLevel;
             _state = State.Result;
             _ui.Hud.SetHand(false, Vector2.zero);
             _ui.Hud.SetTutorial(null);
@@ -284,6 +315,11 @@ namespace PixelDefense.App
             {
                 SaveProgress();
                 _ui.Result.ShowLose("The dragon reached your base. Mind the color order on its neck!");
+            }
+
+            if (_bot)
+            {
+                BotAfterResult(finished, result);
             }
         }
 
@@ -321,6 +357,10 @@ namespace PixelDefense.App
                 _paused = true;
                 Time.timeScale = 0f;
             }
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            RefreshBotUi();
+#endif
             _ui.Settings.Show(inBattle && _state == State.Playing);
         }
 
@@ -330,7 +370,13 @@ namespace PixelDefense.App
             if (_paused)
             {
                 _paused = false;
-                Time.timeScale = 1f;
+                Time.timeScale = _battle.SpeedMultiplier;
+            }
+
+            // The bot holds on the result screen while the menu is open; move on once it closes.
+            if (_bot && _state == State.Result)
+            {
+                ContinueBot(this.GetCancellationTokenOnDestroy()).Forget();
             }
         }
 
@@ -338,6 +384,12 @@ namespace PixelDefense.App
         {
             if (_state != State.Playing || _paused || !_battle.InputEnabled)
             {
+                return;
+            }
+
+            if (kind == BoosterKind.Pick && _battle.IsPicking)
+            {
+                _battle.CancelPick();
                 return;
             }
 
@@ -352,6 +404,17 @@ namespace PixelDefense.App
                 return;
             }
 
+            if (kind == BoosterKind.Pick)
+            {
+                // Paid only once a cannon is actually placed (see OnPickPlaced); cancelling is free.
+                if (!_battle.BeginPick())
+                {
+                    _audio.Play(_deny);
+                }
+                _ui.Hud.PunchBooster(kind);
+                return;
+            }
+
             bool used = kind == BoosterKind.Freeze ? _battle.UseFreeze()
                 : kind == BoosterKind.Bomb ? _battle.UseBomb()
                 : _battle.AddSlot();
@@ -362,13 +425,24 @@ namespace PixelDefense.App
                 return;
             }
 
-            if (owned)
+            Spend(kind);
+        }
+
+        private void OnPickPlaced()
+        {
+            Spend(BoosterKind.Pick);
+        }
+
+        private void Spend(BoosterKind kind)
+        {
+            ref int count = ref BoosterCount(kind);
+            if (count > 0)
             {
                 count--;
             }
             else
             {
-                _progress.Coins -= price;
+                _progress.Coins = Mathf.Max(0, _progress.Coins - BoosterPrice(kind));
                 _ui.Hud.SetCoins(_progress.Coins);
             }
 
@@ -385,6 +459,8 @@ namespace PixelDefense.App
                     return ref _progress.Freeze;
                 case BoosterKind.Bomb:
                     return ref _progress.Bomb;
+                case BoosterKind.Pick:
+                    return ref _progress.Pick;
                 default:
                     return ref _progress.Slot;
             }
@@ -392,7 +468,17 @@ namespace PixelDefense.App
 
         private int BoosterPrice(BoosterKind kind)
         {
-            return kind == BoosterKind.Freeze ? _config.FreezePrice : kind == BoosterKind.Bomb ? _config.BombPrice : _config.SlotPrice;
+            switch (kind)
+            {
+                case BoosterKind.Freeze:
+                    return _config.FreezePrice;
+                case BoosterKind.Bomb:
+                    return _config.BombPrice;
+                case BoosterKind.Pick:
+                    return _config.PickPrice;
+                default:
+                    return _config.SlotPrice;
+            }
         }
 
         private void RefreshBoosters()
@@ -401,6 +487,120 @@ namespace PixelDefense.App
             _ui.Hud.SetBooster(BoosterKind.Freeze, _progress.Freeze, _config.FreezePrice, true);
             _ui.Hud.SetBooster(BoosterKind.Bomb, _progress.Bomb, _config.BombPrice, true);
             _ui.Hud.SetBooster(BoosterKind.Slot, _progress.Slot, _config.SlotPrice, canAddSlot);
+            _ui.Hud.SetBooster(BoosterKind.Pick, _progress.Pick, _config.PickPrice, _canPick);
+        }
+
+        /// <summary>The pick booster needs a free slot and a cannon left in the tray; its button dims otherwise.</summary>
+        private void UpdatePickAvailability()
+        {
+            Battle battle = _battle.Battle;
+            bool canPick = _battle.IsPicking || (battle.HasFreeSlot && battle.DeployedCount < battle.CannonCount);
+            if (canPick != _canPick)
+            {
+                _canPick = canPick;
+                _ui.Hud.SetBooster(BoosterKind.Pick, _progress.Pick, _config.PickPrice, _canPick);
+            }
+        }
+
+        // ---------- Autoplay bot (testing) ----------
+
+        private void ToggleBot()
+        {
+            _bot = !_bot;
+            _botLosses = 0;
+            _battle.AutoPlay = _bot;
+            if (!_bot)
+            {
+                CancelBotNext();
+            }
+            else if (_state == State.Result)
+            {
+                ContinueBot(this.GetCancellationTokenOnDestroy()).Forget();
+            }
+
+            if (_state == State.Playing)
+            {
+                _ui.Hud.SetLevel(_progress.LevelNumber, _bot ? "BOT" : null);
+            }
+            RefreshBotUi();
+            Debug.Log("[Bot] Autoplay " + (_bot ? "ON" : "OFF"));
+        }
+
+        private void CycleBotSpeed()
+        {
+            float[] speeds = _config.BotSpeeds;
+            if (speeds == null || speeds.Length == 0)
+            {
+                return;
+            }
+
+            _botSpeed = (_botSpeed + 1) % speeds.Length;
+            _battle.SpeedMultiplier = speeds[_botSpeed];
+            if (_paused)
+            {
+                Time.timeScale = 0f;
+            }
+            RefreshBotUi();
+        }
+
+        private void RefreshBotUi()
+        {
+            _ui.Settings.SetBot(_bot, _battle.SpeedMultiplier);
+        }
+
+        private void BotAfterResult(LevelDefinition level, BattleResult result)
+        {
+            Battle battle = _battle.Battle;
+            string time = battle != null ? battle.Time.ToString("F1", CultureInfo.InvariantCulture) + "s" : "?";
+            string margin = _battle.MinDistance.ToString("F1", CultureInfo.InvariantCulture);
+            if (result == BattleResult.Won)
+            {
+                _botLosses = 0;
+                Debug.Log("[Bot] " + level.Id + " " + level.Name + ": WON " + _battle.Stars + " stars in " + time +
+                          " (closest approach " + margin + " slices)");
+            }
+            else
+            {
+                _botLosses++;
+                Debug.LogWarning("[Bot] " + level.Id + " " + level.Name + ": LOST after " + time + " (attempt " + _botLosses + ")");
+                if (_botLosses >= Mathf.Max(1, _config.BotRetries))
+                {
+                    Debug.LogWarning("[Bot] Skipping " + level.Id + " after " + _botLosses + " losses.");
+                    _botLosses = 0;
+                    _progress.LevelNumber++;
+                    AdvanceLevel();
+                    SaveProgress();
+                }
+            }
+
+            ContinueBot(this.GetCancellationTokenOnDestroy()).Forget();
+        }
+
+        private async UniTaskVoid ContinueBot(CancellationToken destroyed)
+        {
+            CancelBotNext();
+            _botNext = CancellationTokenSource.CreateLinkedTokenSource(destroyed);
+            CancellationToken token = _botNext.Token;
+            await UniTask.Delay(TimeSpan.FromSeconds(_config.BotResultPause), DelayType.UnscaledDeltaTime, cancellationToken: token)
+                .SuppressCancellationThrow();
+            if (token.IsCancellationRequested || !_bot || _state != State.Result || _ui.Settings.IsVisible)
+            {
+                return;
+            }
+
+            StartLevel(true);
+        }
+
+        private void CancelBotNext()
+        {
+            if (_botNext == null)
+            {
+                return;
+            }
+
+            _botNext.Cancel();
+            _botNext.Dispose();
+            _botNext = null;
         }
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -411,6 +611,12 @@ namespace PixelDefense.App
             _progress.LevelNumber = _levelIndex + 1;
             _progress.CurrentLevelId = CurrentLevel.Id;
             StartLevel(true);
+        }
+
+        /// <summary>Debug: same as the pause-menu bot switch (menu Pixel Defense ▸ Bot).</summary>
+        public void DebugToggleBot()
+        {
+            ToggleBot();
         }
 #endif
 
@@ -423,11 +629,16 @@ namespace PixelDefense.App
         {
             HandleBackButton();
             HandleResize();
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            HandleBotKeys();
+#endif
 
             if (_state != State.Playing || _battle.Battle == null)
             {
                 return;
             }
+
+            UpdatePickAvailability();
 
             _ui.Hud.SetDanger(_battle.Danger, _battle.Battle.InContact);
             if (_battle.ConsumeHealthDirty())
@@ -462,6 +673,10 @@ namespace PixelDefense.App
             {
                 CloseSettings();
             }
+            else if (_battle.IsPicking)
+            {
+                _battle.CancelPick();
+            }
             else if (_state == State.Playing)
             {
                 OpenSettings(true);
@@ -471,6 +686,28 @@ namespace PixelDefense.App
                 EnterHome();
             }
         }
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        /// <summary>B toggles the autoplay bot, N cycles the game speed.</summary>
+        private void HandleBotKeys()
+        {
+            Keyboard keyboard = Keyboard.current;
+            if (keyboard == null)
+            {
+                return;
+            }
+
+            if (keyboard.bKey.wasPressedThisFrame)
+            {
+                ToggleBot();
+            }
+
+            if (keyboard.nKey.wasPressedThisFrame)
+            {
+                CycleBotSpeed();
+            }
+        }
+#endif
 
         private void HandleResize()
         {

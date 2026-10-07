@@ -17,18 +17,27 @@ namespace PixelDefense.Gameplay
         public float WallHeight = 1.15f;
 
         [Header("Layout (slice units)")]
-        public float SlotSize = 2.65f;
-        public float SlotGap = 0.42f;
+        public float SlotSize = 3.1f;
+        public float SlotGap = 0.9f;
+
+        [Tooltip("Widest the slot row may get, as a fraction of the base platform's diameter.")]
+        [Range(0.5f, 1f)] public float SlotRowFill = 0.91f;
+
         public float ColumnSpacing = 5.4f;
         public float RowSpacing = 4.7f;
         public float ColumnsGap = 1.6f;
+
+        [Tooltip("Cannons shown per column; deeper ones stay hidden until they move up.")]
         public int VisibleRows = 3;
 
         [Tooltip("Cannon size while waiting in the tray (slice units).")]
         public float CannonSize = 4.5f;
 
-        [Tooltip("Cannon size once seated on a base slot (slice units).")]
-        public float SlotCannonSize = 3.0f;
+        [Tooltip("Largest cannon size once seated on a base slot (slice units).")]
+        public float SlotCannonSize = 2.7f;
+
+        [Tooltip("Seated cannon size as a fraction of the slot pitch, so a barrel aimed sideways clears its neighbour.")]
+        [Range(0.4f, 1f)] public float SeatPitchFill = 0.68f;
 
         [Header("Palette (sRGB, indexed by ScaleColors)")]
         public Color[] ScaleColors = DefaultPalette();

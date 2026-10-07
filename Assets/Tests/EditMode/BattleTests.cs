@@ -238,6 +238,107 @@ namespace PixelDefense.Tests.EditMode
             Assert.That(dismissed, Is.EqualTo(0), "Red cannon has nothing left to shoot and must leave.");
         }
 
+        [Test]
+        public void DeployCannon_FromMiddleOfColumn_KeepsFrontAndSkipsTheGap()
+        {
+            Battle battle = Create("width 1\nslots 3\nbody R*1 G*1 B*1\ncol R1 G1 B1", FarAway, moving: false);
+            int green = battle.CannonIdAt(0, 1);
+
+            Assert.That(battle.DeployCannon(green), Is.EqualTo(DeployResult.Deployed));
+
+            Assert.That(battle.GetSlot(0).CannonId, Is.EqualTo(green));
+            Assert.That(battle.FrontCannon(0), Is.EqualTo(battle.CannonIdAt(0, 0)));
+            Assert.That(battle.ColumnRemaining(0), Is.EqualTo(2));
+            Assert.That(battle.Deploy(0), Is.EqualTo(DeployResult.Deployed));
+            Assert.That(battle.FrontCannon(0), Is.EqualTo(battle.CannonIdAt(0, 2)), "The picked cannon's place is skipped.");
+            Assert.That(battle.DeployedCount, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void DeployCannon_AlreadyDeployedOrInvalid_ReturnsUnavailable()
+        {
+            Battle battle = Create("width 1\nslots 2\nbody R*2\ncol R1 R1", FarAway, moving: false);
+            int front = battle.FrontCannon(0);
+            battle.Deploy(0);
+
+            Assert.That(battle.DeployCannon(front), Is.EqualTo(DeployResult.Unavailable));
+            Assert.That(battle.DeployCannon(-1), Is.EqualTo(DeployResult.Unavailable));
+            Assert.That(battle.DeployCannon(battle.CannonCount), Is.EqualTo(DeployResult.Unavailable));
+        }
+
+        [Test]
+        public void DeployCannon_MysteryCannonPicked_IsRevealed()
+        {
+            Battle battle = Create("width 1\nslots 2\nbody R*1 G*1 B*1\ncol R1 ?G1 B1", FarAway, moving: false);
+            int mystery = battle.CannonIdAt(0, 1);
+            var revealed = new List<int>();
+            battle.CannonRevealed += (column, id) => revealed.Add(id);
+            Assert.That(battle.IsRevealed(mystery), Is.False);
+
+            battle.DeployCannon(mystery);
+
+            Assert.That(revealed, Is.EqualTo(new[] { mystery }));
+            Assert.That(battle.IsRevealed(mystery), Is.True);
+        }
+
+        [Test]
+        public void Deploy_FrontAfterSecondWasPicked_RevealsMysteryThird()
+        {
+            Battle battle = Create("width 1\nslots 3\nbody R*1 G*1 B*1\ncol R1 G1 ?B1", FarAway, moving: false);
+            int mystery = battle.CannonIdAt(0, 2);
+            var revealed = new List<int>();
+            battle.CannonRevealed += (column, id) => revealed.Add(id);
+
+            battle.DeployCannon(battle.CannonIdAt(0, 1));
+            Assert.That(revealed, Is.Empty);
+
+            battle.Deploy(0);
+            Assert.That(revealed, Is.EqualTo(new[] { mystery }));
+            Assert.That(battle.FrontCannon(0), Is.EqualTo(mystery));
+        }
+
+        [Test]
+        public void ActionCount_CountsSuccessfulDeploysAndBoosters()
+        {
+            Battle battle = Create("width 1\nslots 1\nbody R*3\ncol R1 R1 R1", FarAway, moving: false);
+
+            battle.Deploy(0);
+            battle.Deploy(0);
+            Assert.That(battle.ActionCount, Is.EqualTo(1), "A deploy into full slots changes nothing.");
+
+            battle.UseFreeze();
+            battle.AddSlot();
+            Assert.That(battle.ActionCount, Is.EqualTo(3));
+        }
+
+        [Test]
+        public void StateHash_DependsOnWhichCannonWasPicked()
+        {
+            Battle second = Create("width 1\nslots 2\nbody R*3\ncol R1 R1 R1", FarAway, moving: false);
+            Battle third = Create("width 1\nslots 2\nbody R*3\ncol R1 R1 R1", FarAway, moving: false);
+
+            second.DeployCannon(second.CannonIdAt(0, 1));
+            third.DeployCannon(third.CannonIdAt(0, 2));
+
+            Assert.That(second.StateHash, Is.Not.EqualTo(third.StateHash));
+        }
+
+        [Test]
+        public void CloneForPlanning_IgnoresContactAndLeavesOriginalUntouched()
+        {
+            Battle battle = Create("width 1\nstart 9.9\nspeed 5\nbody R*2\ncol R2", 10f, moving: true);
+            battle.Tick(0.5f);
+            Assert.That(battle.InContact, Is.True);
+
+            Battle plan = battle.CloneForPlanning();
+            plan.Tick(10f);
+
+            Assert.That(plan.Phase, Is.EqualTo(BattlePhase.Playing), "Planning copies can never lose on time.");
+            Assert.That(plan.InContact, Is.False);
+            Assert.That(battle.Time, Is.EqualTo(0.5f).Within(1e-4f));
+            Assert.That(battle.InContact, Is.True);
+        }
+
         private static Battle Create(string text, float contactFront, bool moving)
         {
             LevelDefinition level = TestLevels.Make(text);

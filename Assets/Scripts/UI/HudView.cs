@@ -9,10 +9,14 @@ namespace PixelDefense.UI
     {
         Freeze,
         Bomb,
-        Slot
+        Slot,
+        Pick
     }
 
-    /// <summary>Battle HUD: level, coins, dragon health bar, boosters, praise text, jam banner, danger vignette, tutorial hand.</summary>
+    /// <summary>
+    /// Battle HUD: level, coins, dragon health bar, boosters, praise text, jam and pick banners, danger vignette,
+    /// tutorial hand.
+    /// </summary>
     public sealed class HudView
     {
         private const string PraiseShow = "praise--show";
@@ -30,7 +34,8 @@ namespace PixelDefense.UI
         private readonly VisualElement _hand;
         private readonly VisualElement _handRing;
         private readonly VisualElement _vignette;
-        private readonly Booster[] _boosters = new Booster[3];
+        private readonly VisualElement _pickBanner;
+        private readonly Booster[] _boosters = new Booster[4];
         private float _praiseTimer;
         private float _handTime;
         private bool _handVisible;
@@ -50,11 +55,14 @@ namespace PixelDefense.UI
             _hand = root.Q<VisualElement>("hand");
             _handRing = root.Q<VisualElement>("handRing");
             _vignette = root.Q<VisualElement>("vignette");
+            _pickBanner = root.Q<VisualElement>("pickBanner");
             PauseButton = root.Q<Button>("pauseButton");
+            root.Q<Button>("pickCancelButton").clicked += () => PickCancelClicked?.Invoke();
 
             _boosters[(int)BoosterKind.Freeze] = new Booster(root, "freeze");
             _boosters[(int)BoosterKind.Bomb] = new Booster(root, "bomb");
             _boosters[(int)BoosterKind.Slot] = new Booster(root, "slot");
+            _boosters[(int)BoosterKind.Pick] = new Booster(root, "pick");
             for (int i = 0; i < _boosters.Length; i++)
             {
                 var kind = (BoosterKind)i;
@@ -63,13 +71,15 @@ namespace PixelDefense.UI
         }
 
         public event Action<BoosterKind> BoosterClicked;
+        public event Action PickCancelClicked;
 
         public VisualElement Root { get; }
         public Button PauseButton { get; }
 
-        public void SetLevel(int number)
+        /// <param name="tag">Optional suffix, e.g. "BOT" while the autoplay bot is playing.</param>
+        public void SetLevel(int number, string tag = null)
         {
-            _level.text = "LEVEL " + number;
+            _level.text = string.IsNullOrEmpty(tag) ? "LEVEL " + number : "LEVEL " + number + " \u00B7 " + tag;
         }
 
         public void SetCoins(int coins)
@@ -119,6 +129,13 @@ namespace PixelDefense.UI
         public void SetJammed(bool jammed)
         {
             _jam.EnableInClassList("jam-banner" + HiddenModifier, !jammed);
+        }
+
+        /// <summary>Shows the "pick a cannon" banner and lights up the pick booster while it waits for a choice.</summary>
+        public void SetPicking(bool picking)
+        {
+            _pickBanner.EnableInClassList("pick-banner" + HiddenModifier, !picking);
+            _boosters[(int)BoosterKind.Pick].Button.EnableInClassList("booster--active", picking);
         }
 
         public void SetTutorial(string text)

@@ -16,6 +16,12 @@ namespace PixelDefense.Core
         // Keeps a misconfigured start from beginning the level already touching the base.
         private const float StartMargin = 0.05f;
 
+        // A contact point no dragon can reach: planning copies only care about deploy order, never about time.
+        private const float UnreachableContact = float.MaxValue / 4f;
+
+        // Offsets cannon keys away from the dragon's cube keys in the state hash.
+        private const int DeployedKeyOffset = 1 << 24;
+
         private readonly LevelDefinition _level;
         private readonly BattleSettings _settings;
         private readonly CannonSpec[] _cannons;
@@ -23,6 +29,8 @@ namespace PixelDefense.Core
         private readonly int[] _cannonDepth;
         private readonly int[][] _columnIds;
         private readonly int[] _columnHead;
+        private readonly int[] _columnRemaining;
+        private readonly bool[] _deployed;
         private readonly SlotState[] _slots;
         private readonly Queue<Shot> _shots;
         private readonly int[] _bombSlices;
@@ -30,6 +38,7 @@ namespace PixelDefense.Core
         private int _nextShotId;
         private float _frozenUntil;
         private float _jamSince;
+        private ulong _deployedHash;
 
         public Battle(LevelDefinition level, BattleSettings settings, float contactFront)
         {
@@ -40,13 +49,16 @@ namespace PixelDefense.Core
 
             _columnIds = new int[level.ColumnCount][];
             _columnHead = new int[level.ColumnCount];
+            _columnRemaining = new int[level.ColumnCount];
             _cannons = new CannonSpec[level.CannonCount];
             _cannonColumn = new int[_cannons.Length];
             _cannonDepth = new int[_cannons.Length];
+            _deployed = new bool[_cannons.Length];
             int id = 0;
             for (int c = 0; c < level.ColumnCount; c++)
             {
                 _columnIds[c] = new int[level.ColumnLength(c)];
+                _columnRemaining[c] = _columnIds[c].Length;
                 for (int d = 0; d < _columnIds[c].Length; d++)
                 {
                     _cannons[id] = level.Cannon(c, d);
@@ -67,7 +79,7 @@ namespace PixelDefense.Core
             MovementEnabled = true;
         }
 
-        private Battle(Battle source)
+        private Battle(Battle source, bool planning)
         {
             _level = source._level;
             _settings = source._settings;
@@ -76,6 +88,9 @@ namespace PixelDefense.Core
             _cannonDepth = source._cannonDepth;
             _columnIds = source._columnIds;
             _columnHead = (int[])source._columnHead.Clone();
+            _columnRemaining = (int[])source._columnRemaining.Clone();
+            _deployed = (bool[])source._deployed.Clone();
+            _deployedHash = source._deployedHash;
             _slots = new SlotState[source._slots.Length];
             for (int i = 0; i < _slots.Length; i++)
             {
@@ -88,15 +103,26 @@ namespace PixelDefense.Core
             _frozenUntil = source._frozenUntil;
             _jamSince = source._jamSince;
             Dragon = source.Dragon.Clone();
-            ContactFront = source.ContactFront;
             Phase = source.Phase;
             Time = source.Time;
-            InContact = source.InContact;
-            ContactTimer = source.ContactTimer;
             IsEnraged = source.IsEnraged;
             IsJammed = source.IsJammed;
             IsFrozen = source.IsFrozen;
-            MovementEnabled = source.MovementEnabled;
+            DeployedCount = source.DeployedCount;
+            ActionCount = source.ActionCount;
+
+            if (planning)
+            {
+                ContactFront = UnreachableContact;
+                MovementEnabled = false;
+            }
+            else
+            {
+                ContactFront = source.ContactFront;
+                InContact = source.InContact;
+                ContactTimer = source.ContactTimer;
+                MovementEnabled = source.MovementEnabled;
+            }
         }
 
         public event Action<int, int, int> CannonDeployed;
@@ -137,6 +163,12 @@ namespace PixelDefense.Core
         /// <summary>When false the dragon never moves (solver mode).</summary>
         public bool MovementEnabled { get; set; }
 
+        /// <summary>Cannons that have left their columns so far.</summary>
+        public int DeployedCount { get; private set; }
+
+        /// <summary>Counts every successful player action (deploys and boosters); planners use it to spot outside changes.</summary>
+        public int ActionCount { get; private set; }
+
         public float DistanceToBase => ContactFront - Dragon.FrontPosition;
         public int SlotCount => _slotCount;
         public int ColumnCount => _columnIds.Length;
@@ -175,7 +207,13 @@ namespace PixelDefense.Core
 
         public int ColumnRemaining(int column)
         {
-            return _columnIds[column].Length - _columnHead[column];
+            return _columnRemaining[column];
+        }
+
+        /// <summary>True once the cannon has left its column (tapped from the front or picked by the booster).</summary>
+        public bool IsDeployed(int cannonId)
+        {
+            return _deployed[cannonId];
         }
 
         public int CannonIdAt(int column, int depth)
@@ -192,7 +230,7 @@ namespace PixelDefense.Core
 
         public bool IsRevealed(int cannonId)
         {
-            return !_cannons[cannonId].Hidden || _cannonDepth[cannonId] <= _columnHead[_cannonColumn[cannonId]];
+            return !_cannons[cannonId].Hidden || _deployed[cannonId] || _cannonDepth[cannonId] <= _columnHead[_cannonColumn[cannonId]];
         }
 
         public bool HasFreeSlot => FirstEmptySlot() >= 0;
@@ -258,19 +296,25 @@ namespace PixelDefense.Core
 
         public Battle Clone()
         {
-            return new Battle(this);
+            return new Battle(this, false);
         }
 
-        /// <summary>Solver identity of the current state: scales alive, column progress and slot contents.</summary>
+        /// <summary>
+        /// Copy for planning: the dragon stays put and can never touch the base, so only the deploy order matters.
+        /// Event subscribers are not copied.
+        /// </summary>
+        public Battle CloneForPlanning()
+        {
+            return new Battle(this, true);
+        }
+
+        /// <summary>Solver identity of the current state: scales alive, cannons deployed and slot contents.</summary>
         public ulong StateHash
         {
             get
             {
                 ulong hash = Dragon.StateHash ^ 0xA0761D6478BD642FUL;
-                for (int c = 0; c < _columnHead.Length; c++)
-                {
-                    hash = Mix(hash, (ulong)(_columnHead[c] + 1) << 8 | (ulong)c);
-                }
+                hash = Mix(hash, _deployedHash);
 
                 for (int i = 0; i < _slotCount; i++)
                 {
@@ -284,6 +328,7 @@ namespace PixelDefense.Core
             }
         }
 
+        /// <summary>Taps a column: its front cannon jumps to the first free slot.</summary>
         public DeployResult Deploy(int column)
         {
             if (Phase != BattlePhase.Playing)
@@ -296,10 +341,24 @@ namespace PixelDefense.Core
                 return DeployResult.InvalidColumn;
             }
 
-            int[] ids = _columnIds[column];
-            if (_columnHead[column] >= ids.Length)
+            int cannonId = FrontCannon(column);
+            return cannonId < 0 ? DeployResult.EmptyColumn : DeployCannon(cannonId);
+        }
+
+        /// <summary>
+        /// Sends any cannon still waiting in a column to the first free slot, even from behind others (the pick
+        /// booster). Cannons behind it move up; a mystery cannon picked this way shows its color as it jumps.
+        /// </summary>
+        public DeployResult DeployCannon(int cannonId)
+        {
+            if (Phase != BattlePhase.Playing)
             {
-                return DeployResult.EmptyColumn;
+                return DeployResult.NotPlaying;
+            }
+
+            if (cannonId < 0 || cannonId >= _cannons.Length || _deployed[cannonId])
+            {
+                return DeployResult.Unavailable;
             }
 
             int slotIndex = FirstEmptySlot();
@@ -308,7 +367,23 @@ namespace PixelDefense.Core
                 return DeployResult.SlotsFull;
             }
 
-            int cannonId = ids[_columnHead[column]++];
+            int column = _cannonColumn[cannonId];
+            bool wasRevealed = IsRevealed(cannonId);
+            _deployed[cannonId] = true;
+            _deployedHash ^= DragonBody.CubeKey(DeployedKeyOffset + cannonId);
+            _columnRemaining[column]--;
+            DeployedCount++;
+            ActionCount++;
+
+            int[] ids = _columnIds[column];
+            int oldHead = _columnHead[column];
+            int head = oldHead;
+            while (head < ids.Length && _deployed[ids[head]])
+            {
+                head++;
+            }
+            _columnHead[column] = head;
+
             CannonSpec spec = _cannons[cannonId];
             SlotState slot = _slots[slotIndex];
             slot.Clear();
@@ -321,8 +396,12 @@ namespace PixelDefense.Core
 
             CannonDeployed?.Invoke(column, slotIndex, cannonId);
 
-            int head = _columnHead[column];
-            if (head < ids.Length && _cannons[ids[head]].Hidden)
+            if (!wasRevealed)
+            {
+                CannonRevealed?.Invoke(column, cannonId);
+            }
+
+            if (head != oldHead && head < ids.Length && _cannons[ids[head]].Hidden)
             {
                 CannonRevealed?.Invoke(column, ids[head]);
             }
@@ -374,6 +453,7 @@ namespace PixelDefense.Core
             }
 
             _frozenUntil = Time + _settings.FreezeDuration;
+            ActionCount++;
             if (!IsFrozen)
             {
                 IsFrozen = true;
@@ -390,6 +470,7 @@ namespace PixelDefense.Core
                 return 0;
             }
 
+            ActionCount++;
             int count = 0;
             for (int w = 0; w < Dragon.WindowCount && count < _bombSlices.Length; w++)
             {
@@ -437,6 +518,7 @@ namespace PixelDefense.Core
 
             _slots[_slotCount].Clear();
             _slotCount++;
+            ActionCount++;
             SlotAdded?.Invoke(_slotCount - 1);
             UpdateJam();
             return true;

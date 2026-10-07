@@ -51,7 +51,7 @@ namespace PixelDefense.Gameplay
         private float _idlePhase;
         private Tween _move;
         private float _traySize;
-        private float _slotSize;
+        private float _pickable;
 
         public int CannonId { get; private set; }
         public CannonSpec Spec { get; private set; }
@@ -67,7 +67,6 @@ namespace PixelDefense.Gameplay
             _meshes = meshes;
             _block = new MaterialPropertyBlock();
             _traySize = config.CannonSize * config.WorldPerSlice;
-            _slotSize = config.SlotCannonSize * config.WorldPerSlice;
             transform.localScale = Vector3.one * _traySize;
 
             _squash = new GameObject("Squash").transform;
@@ -115,6 +114,7 @@ namespace PixelDefense.Gameplay
             _yawTarget = 0f;
             _flash = 0f;
             _hint = 0f;
+            _pickable = 0f;
             _idlePhase = Random.value * 10f;
             _squashSpring = new FloatSpring(0f);
             _recoil = new FloatSpring(0f);
@@ -182,18 +182,20 @@ namespace PixelDefense.Gameplay
             _move = transform.DOScale(_traySize, 0.3f).SetDelay(delay).SetEase(Ease.OutBack).SetLink(gameObject);
         }
 
-        public async UniTask JumpTo(Vector3 position, float duration, System.Threading.CancellationToken token)
+        /// <param name="seatSize">World size once seated on the slot.</param>
+        public async UniTask JumpTo(Vector3 position, float seatSize, float duration, System.Threading.CancellationToken token)
         {
             _move?.Kill();
             State = CannonState.Jumping;
             _hint = 0f;
+            _pickable = 0f;
             transform.localScale = Vector3.one * _traySize;
             _squashSpring.Value = 0.35f;
             _squashSpring.Velocity = -6f;
             _flash = 0.6f;
             SetAmmo(Spec.Ammo, punch: false);
 
-            Sequence jump = BuildJump(position, duration);
+            Sequence jump = BuildJump(position, seatSize, duration);
             _move = jump;
             await jump.ToUniTask(TweenCancelBehaviour.Complete, token);
             State = CannonState.InSlot;
@@ -201,12 +203,28 @@ namespace PixelDefense.Gameplay
             _squashSpring.Velocity = 0f;
         }
 
-        private Sequence BuildJump(Vector3 position, float duration)
+        private Sequence BuildJump(Vector3 position, float seatSize, float duration)
         {
-            // Shrinks in flight: tray cannons are big for thumbs, seated cannons fit the small base pads.
+            // Shrinks in flight: tray cannons are big for thumbs, seated cannons fit the base pads.
             Sequence jump = transform.DOJump(position, 2.6f, 1, duration).SetEase(Ease.Linear).SetLink(gameObject);
-            jump.Join(transform.DOScale(_slotSize, duration).SetEase(Ease.InOutQuad));
+            jump.Join(transform.DOScale(seatSize, duration).SetEase(Ease.InOutQuad));
             return jump;
+        }
+
+        /// <summary>Re-seats a cannon on a moved slot (the row re-spaces when a slot is added).</summary>
+        public void Reseat(Vector3 position, float seatSize)
+        {
+            if (State != CannonState.InSlot)
+            {
+                return;
+            }
+
+            _move?.Kill();
+            Sequence move = DOTween.Sequence().SetLink(gameObject);
+            move.Append(transform.DOMove(position, 0.26f).SetEase(Ease.OutBack, 1.6f));
+            move.Join(transform.DOScale(seatSize, 0.26f).SetEase(Ease.OutBack));
+            _move = move;
+            _squashSpring.Kick(-4f);
         }
 
         public void Aim(Vector3 target)
@@ -238,6 +256,12 @@ namespace PixelDefense.Gameplay
         public void SetHint(bool on)
         {
             _hint = on ? 1f : 0f;
+        }
+
+        /// <summary>Glows while the pick booster waits for the player to choose a cannon.</summary>
+        public void SetPickable(bool on)
+        {
+            _pickable = on ? 1f : 0f;
         }
 
         public async UniTask Leave(bool dismissed, System.Threading.CancellationToken token)
@@ -289,8 +313,9 @@ namespace PixelDefense.Gameplay
             float squash = _squashSpring.Value * 0.18f;
             float idle = State == CannonState.InColumn ? Mathf.Sin(time * 3.1f + _idlePhase) * 0.025f : 0f;
             float hintBounce = _hint > 0f ? Mathf.Abs(Mathf.Sin(time * 7f)) * 0.22f : 0f;
+            float pickHover = _pickable > 0f ? 0.12f + Mathf.Sin(time * 5f + _idlePhase) * 0.05f : 0f;
             _squash.localScale = new Vector3(1f + squash - idle * 0.5f, 1f - squash + idle, 1f + squash - idle * 0.5f);
-            _squash.localPosition = new Vector3(0f, hintBounce, 0f);
+            _squash.localPosition = new Vector3(0f, hintBounce + pickHover, 0f);
 
             if (State == CannonState.InSlot)
             {
@@ -311,6 +336,10 @@ namespace PixelDefense.Gameplay
             _label.localScale = new Vector3(labelScale, labelScale, labelScale);
 
             float glow = _hint > 0f ? 0.25f + 0.25f * Mathf.Sin(time * 7f) : 0f;
+            if (_pickable > 0f)
+            {
+                glow = Mathf.Max(glow, 0.45f + 0.25f * Mathf.Sin(time * 5f + _idlePhase));
+            }
             _block.SetFloat(FlashId, Mathf.Clamp01(_flash * 0.75f));
             _block.SetFloat(EmissionId, glow);
             _bodyRenderer.SetPropertyBlock(_block);

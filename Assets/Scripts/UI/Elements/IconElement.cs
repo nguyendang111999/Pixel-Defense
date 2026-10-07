@@ -20,7 +20,9 @@ namespace PixelDefense.UI
         Music,
         Vibrate,
         Dragon,
-        Star
+        Star,
+        Pick,
+        Bot
     }
 
     /// <summary>Resolution-independent game icons drawn with Painter2D (no texture imports needed).</summary>

@@ -82,6 +82,15 @@ namespace PixelDefense.Tests.EditMode
         }
 
         [Test]
+        public void Parse_MoreThanFourColumns_ReportsErrorAndSkipsLevel()
+        {
+            LevelPack pack = LevelParser.Parse("version 1\nlevel G\nwidth 1\nbody R*5\ncol R1\ncol R1\ncol R1\ncol R1\ncol R1\nend", "test");
+
+            Assert.That(pack.HasErrors, Is.True);
+            Assert.That(pack.Levels.Count, Is.EqualTo(0));
+        }
+
+        [Test]
         public void Parse_BadPatternWidth_ReportsError()
         {
             LevelPack pack = LevelParser.Parse("version 1\nlevel F\nwidth 3\nbody RG*2\ncol R2 G2\nend", "test");

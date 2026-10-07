@@ -7,7 +7,8 @@ namespace PixelDefense.App
     [Serializable]
     public sealed class ProgressData
     {
-        public const int CurrentVersion = 1;
+        /// <summary>2: added the pick booster.</summary>
+        public const int CurrentVersion = 2;
 
         public int Version = CurrentVersion;
         public string CurrentLevelId;
@@ -16,6 +17,7 @@ namespace PixelDefense.App
         public int Freeze;
         public int Bomb;
         public int Slot;
+        public int Pick;
         public List<LevelRecord> Records = new List<LevelRecord>();
 
         public int StarsFor(string levelId)

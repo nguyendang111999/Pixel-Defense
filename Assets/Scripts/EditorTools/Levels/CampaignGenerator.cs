@@ -11,19 +11,46 @@ using UnityEngine;
 namespace PixelDefense.EditorTools
 {
     /// <summary>
-    /// Builds the main campaign deterministically: designs each dragon (color runs, stripes), splits each color's
-    /// scales into cannon ammo, derives a just-in-time deploy order, perturbs it (parking pressure), deals it into
-    /// columns, proves it solvable, then tunes the crawl speed with the bot to a target safety margin.
+    /// Builds the main campaign deterministically: designs each dragon (color runs, stripes) so every color has a
+    /// multiple of 10 scales, splits those into 10/20/40-ammo cannons, derives a just-in-time deploy order, perturbs
+    /// it (parking pressure), deals it into columns, proves it solvable, then tunes the crawl speed with a careful
+    /// bot to a target safety margin.
     /// </summary>
     public static class CampaignGenerator
     {
         private const int SolverBudget = 150000;
-        private const float BotReaction = 0.9f;
         private const int Attempts = 40;
         private const float MinSpeed = 0.35f;
         private const float MaxSpeed = 4.5f;
 
+        /// <summary>Tap reaction of the speed-tuning bot; slower than an expert so levels leave room to think.</summary>
+        private const float BotReaction = 1.2f;
+
+        /// <summary>Cannon sizes, Pixel Flow style. Every color's scale count is a multiple of the smallest.</summary>
+        private static readonly int[] AmmoSizes = { 10, 20, 40 };
+
+        private const int AmmoUnit = 10;
+        private const int Lanes = 3;
+
+        /// <summary>Where dragons start (slices past the arena entrance); long bodies trail off-screen behind.</summary>
+        private const float DefaultStart = 40f;
+
+        private const int MaxColumns = LevelValidator.MaxColumns;
+
         private static readonly char[] Vivid = { 'O', 'G', 'B', 'R', 'Y', 'P', 'C', 'K', 'W', 'L' };
+
+        /// <summary>
+        /// Boss layouts (L05, L10, ...). Bosses use the same compact tracks as everyone else, so the camera stays as
+        /// close as usual; their extra-long bodies simply trail off-screen.
+        /// </summary>
+        private static readonly string[] BossTracks = { "square", "spiral_cw", "snake", "square_cw", "spiral" };
+
+        /// <summary>Non-boss layouts in campaign order.</summary>
+        private static readonly string[] Tracks =
+        {
+            "spiral_cw", "hairpin", "snake", "zigzag", "square", "hairpin_cw", "snake_cw", "zigzag_cw", "spiral", "snake",
+            "square_cw", "spiral_cw", "hairpin", "zigzag", "snake_cw", "snake", "square", "spiral", "zigzag_cw"
+        };
 
         [MenuItem("Pixel Defense/Levels/Generate Campaign", priority = 60)]
         public static void GenerateMenu()
@@ -62,7 +89,7 @@ namespace PixelDefense.EditorTools
         // Hand-made first level: two colors in order, two columns, a slow dragon and the tap tutorial.
         private const string TutorialLevel =
             "level L01\nname Hatchling\ntrack spiral\nskin ember\ntutorial tap\nspeed 0.90\nstart 18\nwidth 3\nwindow 3\nslots 5\n" +
-            "body O*8 G*6\ncol O12 G9\ncol O12 G9\nend\n";
+            "body O*10 G*10\ncol O20 G10\ncol O10 G20\nend\n";
 
         private struct Plan
         {
@@ -80,18 +107,22 @@ namespace PixelDefense.EditorTools
             public float Stripes;
             public float Hidden;
             public float Slack;
-            public int MinChunk;
-            public int MaxChunk;
             public int MinRun;
             public int MaxRun;
             public float Start;
             public int Seed;
+
+            /// <summary>Relative odds of 10, 20 and 40 ammo cannons.</summary>
+            public float[] AmmoWeights;
+
+            /// <summary>Prefer designs a "tap whatever can shoot" player can beat (relaxed after half the attempts).</summary>
+            public bool PreferGreedy;
         }
 
         private static IEnumerable<Plan> Plans()
         {
-            string[] tracks = { "spiral", "spiral_cw", "square", "spiral", "square_cw", "spiral_cw" };
             string[] skins = { "ember", "jade", "frost", "venom", "ember", "jade", "frost", "venom" };
+            int nonBoss = 0;
             string[] names =
             {
                 "Hatchling", "Three Scales", "Coil Crawler", "Slot Squeeze", "Golden Hoard (Boss)", "Striped Menace",
@@ -106,28 +137,31 @@ namespace PixelDefense.EditorTools
                 int n = i + 1;
                 bool boss = n % 5 == 0;
                 float t = (float)i / (names.Length - 1);
+                string track = boss ? BossTracks[(n / 5 - 1) % BossTracks.Length] : n == 1 ? "spiral" : Tracks[nonBoss++ % Tracks.Length];
                 var plan = new Plan
                 {
                     Id = "L" + n.ToString("D2", CultureInfo.InvariantCulture),
                     Name = names[i],
-                    Track = boss ? "spiral_long" : tracks[i % tracks.Length],
+                    Track = track,
                     Skin = boss ? (n % 10 == 0 ? "shadow" : "gold") : skins[i % skins.Length],
                     Tutorial = n == 2 ? "neck" : n == 4 ? "slots" : n == 8 ? "hidden" : n == 7 ? "boosters" : null,
                     Colors = Mathf.Clamp(2 + n / 3, 3, 6),
-                    Slices = Mathf.RoundToInt(Mathf.Lerp(36f, 110f, t) * (boss ? 1.25f : 1f)),
+                    Slices = Mathf.RoundToInt(Mathf.Lerp(36f, 130f, t) * (boss ? 1.3f : 1f)),
                     Window = n < 6 ? 3 : 2,
-                    Columns = n < 3 ? 2 : n < 9 ? 3 : n < 18 ? 4 : 5,
+                    Columns = n < 3 ? 2 : n < 9 ? 3 : MaxColumns,
                     Slots = 5,
                     Disorder = Mathf.Lerp(0.08f, 0.55f, t) + (boss ? 0.08f : 0f),
                     Stripes = n < 6 ? 0f : Mathf.Lerp(0.2f, 0.4f, t),
                     Hidden = n < 8 ? 0f : Mathf.Lerp(0.12f, 0.3f, t),
-                    Slack = boss ? Mathf.Lerp(0.2f, 0.08f, t) : Mathf.Lerp(0.4f, 0.15f, t),
-                    MinChunk = 9,
-                    MaxChunk = n < 5 ? 24 : n < 12 ? 36 : 45,
+                    Slack = boss ? Mathf.Lerp(0.25f, 0.12f, t) : Mathf.Lerp(0.4f, 0.18f, t),
                     MinRun = 4,
                     MaxRun = n < 5 ? 10 : 14,
-                    Start = 40f,
-                    Seed = 1009 * n + 17
+                    Start = DefaultStart,
+                    Seed = 1009 * n + 17,
+                    AmmoWeights = n < 5 ? new[] { 0.45f, 0.55f, 0f }
+                        : boss ? new[] { 0.2f, 0.4f, 0.4f }
+                        : new[] { Mathf.Lerp(0.35f, 0.2f, t), 0.45f, Mathf.Lerp(0.2f, 0.35f, t) },
+                    PreferGreedy = !boss && n < 12
                 };
                 if (n == 1)
                 {
@@ -165,6 +199,11 @@ namespace PixelDefense.EditorTools
                 }
 
                 bool greedy = LevelSolver.Solve(level, settings, 1).GreedyWins;
+                if (plan.PreferGreedy && !greedy && attempt < Attempts / 2)
+                {
+                    continue;
+                }
+
                 float speed = TuneSpeed(text, plan, settings, moves, out BotResult bot, out float startDistance);
                 if (speed <= 0f)
                 {
@@ -172,7 +211,7 @@ namespace PixelDefense.EditorTools
                 }
 
                 string final = Format(plan, body, columns, speed);
-                reportLine = plan.Id + " " + plan.Name + ": slices=" + level.SliceCount + " cannons=" + level.CannonCount +
+                reportLine = plan.Id + " " + plan.Name + " [" + plan.Track + "]: slices=" + level.SliceCount + " cannons=" + level.CannonCount +
                              " speed=" + speed.ToString("F2", CultureInfo.InvariantCulture) +
                              " slack=" + (bot.MinDistance / startDistance).ToString("P0", CultureInfo.InvariantCulture) +
                              " botTime=" + bot.Duration.ToString("F0", CultureInfo.InvariantCulture) + "s greedy=" + greedy +
@@ -185,23 +224,30 @@ namespace PixelDefense.EditorTools
             return string.Empty;
         }
 
+        private sealed class Run
+        {
+            public string Pattern;
+            public char Main;
+            public int Slices;
+
+            public bool Solid => Pattern.Length == 1;
+        }
+
         private static string DesignBody(Plan plan, System.Random random, out Dictionary<char, int> counts, out List<char> demand)
         {
             var palette = new List<char>(Vivid);
             Shuffle(palette, random);
             var colors = palette.GetRange(0, plan.Colors);
-            counts = new Dictionary<char, int>();
-            demand = new List<char>();
-            var tokens = new List<string>();
+            var runs = new List<Run>();
             int remaining = plan.Slices;
             char previous = ' ';
             int colorCursor = 0;
             while (remaining > 0)
             {
-                int run = Math.Min(remaining, random.Next(plan.MinRun, plan.MaxRun + 1));
-                if (remaining - run > 0 && remaining - run < plan.MinRun)
+                int length = Math.Min(remaining, random.Next(plan.MinRun, plan.MaxRun + 1));
+                if (remaining - length > 0 && remaining - length < plan.MinRun)
                 {
-                    run = remaining;
+                    length = remaining;
                 }
 
                 char main = colors[colorCursor % colors.Count];
@@ -226,22 +272,101 @@ namespace PixelDefense.EditorTools
                     pattern = main.ToString();
                 }
 
-                tokens.Add(pattern + "*" + run);
-                for (int s = 0; s < run; s++)
+                runs.Add(new Run { Pattern = pattern, Main = main, Slices = length });
+                previous = main;
+                remaining -= length;
+            }
+
+            RoundColorTotals(runs, plan, random);
+
+            counts = new Dictionary<char, int>();
+            demand = new List<char>();
+            var tokens = new List<string>(runs.Count);
+            foreach (Run run in runs)
+            {
+                tokens.Add(run.Pattern + "*" + run.Slices.ToString(CultureInfo.InvariantCulture));
+                for (int s = 0; s < run.Slices; s++)
                 {
-                    for (int lane = 0; lane < 3; lane++)
+                    for (int lane = 0; lane < Lanes; lane++)
                     {
-                        char c = pattern.Length == 1 ? pattern[0] : pattern[lane];
+                        char c = run.Solid ? run.Pattern[0] : run.Pattern[lane];
                         counts[c] = counts.TryGetValue(c, out int v) ? v + 1 : 1;
                         demand.Add(c);
                     }
                 }
-
-                previous = main;
-                remaining -= run;
             }
 
             return string.Join(" ", tokens);
+        }
+
+        /// <summary>
+        /// Makes every color's scale count a multiple of <see cref="AmmoUnit"/> by stretching or trimming one solid
+        /// run of that color: a solid slice holds 3 scales and 3 is invertible mod 10, so one run always fixes it.
+        /// Colors that only appear in stripes first get a short solid run of their own.
+        /// </summary>
+        private static void RoundColorTotals(List<Run> runs, Plan plan, System.Random random)
+        {
+            var colors = new List<char>();
+            foreach (Run run in runs)
+            {
+                foreach (char c in run.Pattern)
+                {
+                    if (!colors.Contains(c))
+                    {
+                        colors.Add(c);
+                    }
+                }
+            }
+
+            foreach (char color in colors)
+            {
+                if (runs.Exists(r => r.Solid && r.Main == color))
+                {
+                    continue;
+                }
+
+                int at = random.Next(1, runs.Count + 1);
+                while (at < runs.Count && (runs[at - 1].Main == color || runs[at].Main == color))
+                {
+                    at++;
+                }
+                runs.Insert(at, new Run { Pattern = color.ToString(), Main = color, Slices = plan.MinRun });
+            }
+
+            foreach (char color in colors)
+            {
+                int total = 0;
+                foreach (Run run in runs)
+                {
+                    foreach (char c in run.Pattern)
+                    {
+                        if (c == color)
+                        {
+                            total += run.Solid ? run.Slices * Lanes : run.Slices;
+                        }
+                    }
+                }
+
+                int remainder = total % AmmoUnit;
+                if (remainder == 0)
+                {
+                    continue;
+                }
+
+                // 3 * 7 = 21 = 1 (mod 10): adding d slices adds 3d scales, so d = -7 * remainder (mod 10).
+                int grow = ((-7 * remainder) % AmmoUnit + AmmoUnit) % AmmoUnit;
+                Run target = null;
+                foreach (Run run in runs)
+                {
+                    if (run.Solid && run.Main == color && (target == null || run.Slices > target.Slices))
+                    {
+                        target = run;
+                    }
+                }
+
+                int delta = grow > AmmoUnit / 2 && target.Slices + grow - AmmoUnit >= plan.MinRun ? grow - AmmoUnit : grow;
+                target.Slices += delta;
+            }
         }
 
         /// <summary>Just-in-time cannon order: a color's next cannon is queued when its scales are next needed.</summary>
@@ -283,21 +408,39 @@ namespace PixelDefense.EditorTools
             return sequence;
         }
 
+        /// <summary>Splits a color's scales (a multiple of 10) into 10, 20 and 40 ammo cannons by the plan's odds.</summary>
         private static List<int> SplitAmmo(int total, Plan plan, System.Random random)
         {
             var parts = new List<int>();
             int remaining = total;
             while (remaining > 0)
             {
-                if (remaining <= plan.MaxChunk && (remaining < plan.MinChunk * 2 || random.NextDouble() < 0.35))
+                float sum = 0f;
+                for (int k = 0; k < AmmoSizes.Length; k++)
                 {
-                    parts.Add(remaining);
-                    break;
+                    if (AmmoSizes[k] <= remaining)
+                    {
+                        sum += plan.AmmoWeights[k];
+                    }
                 }
 
-                int max = Math.Min(plan.MaxChunk, remaining - plan.MinChunk);
-                int chunk = random.Next(plan.MinChunk, max + 1);
-                chunk = Math.Max(plan.MinChunk, chunk / 3 * 3);
+                int chunk = AmmoSizes[0];
+                float roll = (float)random.NextDouble() * sum;
+                for (int k = 0; k < AmmoSizes.Length; k++)
+                {
+                    if (AmmoSizes[k] > remaining || plan.AmmoWeights[k] <= 0f)
+                    {
+                        continue;
+                    }
+
+                    chunk = AmmoSizes[k];
+                    roll -= plan.AmmoWeights[k];
+                    if (roll <= 0f)
+                    {
+                        break;
+                    }
+                }
+
                 parts.Add(chunk);
                 remaining -= chunk;
             }

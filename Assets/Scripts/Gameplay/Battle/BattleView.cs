@@ -66,11 +66,21 @@ namespace PixelDefense.Gameplay
         private bool _healthDirty;
         private float _startDistance;
         private float _minDistance;
+        private bool _picking;
+        private bool _autoPlay;
+        private float _speed = 1f;
+        private readonly AutoPlayDriver _bot = new AutoPlayDriver();
 
         public event Action<BattleResult> Finished;
         public event Action<string, Color> Praise;
         public event Action<bool> JamChanged;
         public event Action Deployed;
+
+        /// <summary>Pick booster mode started (true) or ended (false).</summary>
+        public event Action<bool> PickModeChanged;
+
+        /// <summary>The pick booster sent a cannon to a slot; this is when the booster is spent.</summary>
+        public event Action PickPlaced;
 
         public Battle Battle => _battle;
         public LevelDefinition Level => _level;
@@ -81,6 +91,46 @@ namespace PixelDefense.Gameplay
         public bool IsTutorial => _tutorial;
 
         public float Progress => _battle == null ? 0f : 1f - _battle.Dragon.AliveFraction;
+
+        /// <summary>True while the pick booster waits for the player to choose a cannon (the battle is paused).</summary>
+        public bool IsPicking => _picking;
+
+        /// <summary>Closest the dragon has come to the base so far, in slices.</summary>
+        public float MinDistance => _minDistance;
+
+        /// <summary>Testing aid: the bot plays the battle, showing the hand on each column before it taps.</summary>
+        public bool AutoPlay
+        {
+            get => _autoPlay;
+            set
+            {
+                if (_autoPlay == value)
+                {
+                    return;
+                }
+
+                _autoPlay = value;
+                _bot.Reset();
+                if (!value && _battle != null)
+                {
+                    SetHintColumn(-1);
+                }
+            }
+        }
+
+        /// <summary>Game speed multiplier (testing); every time-scale change in a battle is relative to it.</summary>
+        public float SpeedMultiplier
+        {
+            get => _speed;
+            set
+            {
+                _speed = Mathf.Max(0.1f, value);
+                if (Time.timeScale > 0f)
+                {
+                    Time.timeScale = _speed;
+                }
+            }
+        }
 
         /// <summary>0 when the dragon is far from the base, 1 when touching.</summary>
         public float Danger
@@ -147,7 +197,8 @@ namespace PixelDefense.Gameplay
             _combo = 0;
             _slicesCleared = 0;
             _touchedBase = false;
-            Time.timeScale = 1f;
+            _bot.Reset();
+            Time.timeScale = _speed;
 
             TrackShape track = TrackPresets.Create(level.Track, level.Width);
             _space = new ArenaSpace(track, _visuals, Vector3.zero);
@@ -305,7 +356,9 @@ namespace PixelDefense.Gameplay
             _cts = null;
             _running = false;
             _inputEnabled = false;
-            Time.timeScale = 1f;
+            Time.timeScale = _speed;
+            EndPick();
+            _bot.Reset();
             Unsubscribe();
             _battle = null;
             _hintColumn = -1;
@@ -343,12 +396,11 @@ namespace PixelDefense.Gameplay
         private void FrameCamera()
         {
             _framePoints.Clear();
-            float radius = _space.ArenaRadiusWorld;
+            float[] outline = _space.Track.Outline;
             float wall = _visuals.WallHeight * _space.Scale;
-            for (int i = 0; i < 24; i++)
+            for (int i = 0; i < outline.Length; i += 2)
             {
-                float angle = i * Mathf.PI * 2f / 24f;
-                var p = new Vector3(Mathf.Cos(angle) * radius, 0f, Mathf.Sin(angle) * radius);
+                Vector3 p = _space.ToWorld(outline[i], outline[i + 1]);
                 _framePoints.Add(p);
                 _framePoints.Add(p + Vector3.up * wall);
             }
@@ -395,14 +447,21 @@ namespace PixelDefense.Gameplay
         {
             int head = _battle.ColumnHead(column);
             int length = _battle.ColumnLength(column);
-            int visible = _visuals.VisibleRows + 1;
+            int visible = Mathf.Max(1, _visuals.VisibleRows);
+            int row = 0;
             for (int depth = head; depth < length; depth++)
             {
-                int row = depth - head;
-                CannonView view = _byId[_battle.CannonIdAt(column, depth)];
+                int id = _battle.CannonIdAt(column, depth);
+                if (_battle.IsDeployed(id))
+                {
+                    continue;
+                }
+
+                CannonView view = _byId[id];
                 if (row >= visible)
                 {
                     view.Hide();
+                    row++;
                     continue;
                 }
 
@@ -415,6 +474,9 @@ namespace PixelDefense.Gameplay
                 {
                     view.SlideTo(target, row * 0.035f);
                 }
+
+                view.SetPickable(_picking);
+                row++;
             }
         }
 
@@ -426,6 +488,12 @@ namespace PixelDefense.Gameplay
             }
 
             float dt = Time.deltaTime;
+            if (_picking)
+            {
+                // Time stands still while the player chooses a cannon for the pick booster.
+                return;
+            }
+
             if (dt > 0f)
             {
                 _battle.Tick(dt);
@@ -434,6 +502,15 @@ namespace PixelDefense.Gameplay
             if (_battle == null)
             {
                 return;
+            }
+
+            if (_autoPlay && _inputEnabled && dt > 0f)
+            {
+                _bot.Tick(this, _battle, dt);
+                if (_battle == null)
+                {
+                    return;
+                }
             }
 
             _comboTimer -= dt;
@@ -505,8 +582,17 @@ namespace PixelDefense.Gameplay
         private void UpdateHint(float dt)
         {
             _idleTime += dt;
-            bool want = _inputEnabled && _battle.HasFreeSlot && !_battle.IsJammed && (_tutorial || _idleTime > HintDelay);
-            int column = want ? BestColumn() : -1;
+            int column;
+            if (_autoPlay)
+            {
+                column = _inputEnabled ? _bot.PendingColumn : -1;
+            }
+            else
+            {
+                bool want = _inputEnabled && _battle.HasFreeSlot && !_battle.IsJammed && (_tutorial || _idleTime > HintDelay);
+                column = want ? BattleHints.BestColumn(_battle) : -1;
+            }
+
             if (column == _hintColumn)
             {
                 return;
@@ -537,43 +623,6 @@ namespace PixelDefense.Gameplay
             }
         }
 
-        /// <summary>Column whose front cannon can fire immediately, preferring the most exposed matching scales.</summary>
-        private int BestColumn()
-        {
-            int best = -1;
-            int bestScore = 0;
-            DragonBody body = _battle.Dragon;
-            for (int c = 0; c < _battle.ColumnCount; c++)
-            {
-                int id = _battle.FrontCannon(c);
-                if (id < 0)
-                {
-                    continue;
-                }
-
-                byte color = _battle.GetCannon(id).Color;
-                int score = 0;
-                for (int w = 0; w < body.WindowCount; w++)
-                {
-                    int slice = body.WindowSlice(w);
-                    for (int lane = 0; lane < body.Width; lane++)
-                    {
-                        if (body.IsAlive(slice, lane) && body.ColorAt(slice, lane) == color)
-                        {
-                            score++;
-                        }
-                    }
-                }
-
-                if (score > bestScore)
-                {
-                    bestScore = score;
-                    best = c;
-                }
-            }
-            return best;
-        }
-
         /// <summary>Screen position of the hinted cannon for the tutorial hand.</summary>
         public bool TryGetHintScreenPoint(out Vector2 screen)
         {
@@ -601,10 +650,29 @@ namespace PixelDefense.Gameplay
                 return;
             }
 
-            int column = HitColumn(screen);
-            if (column < 0)
+            if (_picking)
             {
+                int picked = HitCannon(screen);
+                if (picked >= 0)
+                {
+                    PickCannon(picked);
+                }
                 return;
+            }
+
+            int column = HitColumn(screen);
+            if (column >= 0)
+            {
+                TapColumn(column);
+            }
+        }
+
+        /// <summary>Taps a column exactly as the player's finger would (the autoplay bot uses this too).</summary>
+        public DeployResult TapColumn(int column)
+        {
+            if (!InputEnabled || _picking)
+            {
+                return DeployResult.NotPlaying;
             }
 
             _idleTime = 0f;
@@ -621,14 +689,121 @@ namespace PixelDefense.Gameplay
                 {
                     _byId[id].Deny();
                 }
-                for (int i = 0; i < _battle.SlotCount; i++)
-                {
-                    _arena.PunchSlot(i, 0.6f);
-                }
-                _audio.Play(_sfx.Deny);
-                _haptics.Play(HapticStyle.Failure);
-                _cameraRig.AddTrauma(0.12f);
+                DenySlots();
             }
+            return result;
+        }
+
+        private void DenySlots()
+        {
+            for (int i = 0; i < _battle.SlotCount; i++)
+            {
+                _arena.PunchSlot(i, 0.6f);
+            }
+            _audio.Play(_sfx.Deny);
+            _haptics.Play(HapticStyle.Failure);
+            _cameraRig.AddTrauma(0.12f);
+        }
+
+        /// <summary>
+        /// Starts the pick booster: the battle pauses and the next tap on any cannon in the tray sends it to a slot.
+        /// Fails without a free slot.
+        /// </summary>
+        public bool BeginPick()
+        {
+            if (!InputEnabled || _picking || !_battle.HasFreeSlot || _battle.DeployedCount >= _battle.CannonCount)
+            {
+                return false;
+            }
+
+            _picking = true;
+            SetHintColumn(-1);
+            SetPickHighlights(true);
+            _audio.Play(_sfx.Whoosh, 1.25f, 0.7f);
+            _audio.Play(_sfx.Reveal, 0.9f);
+            _haptics.Play(HapticStyle.Medium);
+            _cameraRig.Kick(-0.8f);
+            PickModeChanged?.Invoke(true);
+            return true;
+        }
+
+        public void CancelPick()
+        {
+            EndPick();
+        }
+
+        private void EndPick()
+        {
+            if (!_picking)
+            {
+                return;
+            }
+
+            _picking = false;
+            if (_battle != null)
+            {
+                SetPickHighlights(false);
+            }
+            PickModeChanged?.Invoke(false);
+        }
+
+        private void SetPickHighlights(bool on)
+        {
+            for (int id = 0; id < _byId.Length; id++)
+            {
+                if (!_battle.IsDeployed(id))
+                {
+                    _byId[id].SetPickable(on);
+                }
+            }
+        }
+
+        private void PickCannon(int cannonId)
+        {
+            DeployResult result = _battle.DeployCannon(cannonId);
+            if (result == DeployResult.Deployed)
+            {
+                EndPick();
+                _audio.Play(_sfx.Chime, 1.15f, 0.8f);
+                _fx.Sparkle(_byId[cannonId].transform.position + Vector3.up * 0.3f, Color.white, 12, 0.4f, 0.3f);
+                PickPlaced?.Invoke();
+            }
+            else
+            {
+                _byId[cannonId].Deny();
+                DenySlots();
+            }
+        }
+
+        /// <summary>Nearest visible tray cannon to a screen point (within about half a column), or -1.</summary>
+        private int HitCannon(Vector2 screen)
+        {
+            Camera camera = _cameraRig.Camera;
+            int columns = _level.ColumnCount;
+            float spacing = columns > 1
+                ? Mathf.Abs(camera.WorldToScreenPoint(_space.ColumnPosition(columns - 1, columns, 0)).x -
+                            camera.WorldToScreenPoint(_space.ColumnPosition(0, columns, 0)).x) / (columns - 1)
+                : Screen.width * 0.25f;
+            float lift = _visuals.CannonSize * _space.Scale * 0.4f;
+            float bestDistance = spacing * 0.6f;
+            int best = -1;
+            for (int id = 0; id < _byId.Length; id++)
+            {
+                CannonView view = _byId[id];
+                if (_battle.IsDeployed(id) || !view.gameObject.activeSelf || view.State != CannonState.InColumn)
+                {
+                    continue;
+                }
+
+                Vector2 point = camera.WorldToScreenPoint(view.transform.position + Vector3.up * lift);
+                float distance = Vector2.Distance(point, screen);
+                if (distance < bestDistance)
+                {
+                    bestDistance = distance;
+                    best = id;
+                }
+            }
+            return best;
         }
 
         /// <summary>Forgiving hit test: any press inside the tray, nearest column by screen x.</summary>
@@ -668,12 +843,12 @@ namespace PixelDefense.Gameplay
 
         public bool UseFreeze()
         {
-            return _running && _battle != null && _battle.UseFreeze();
+            return _running && _battle != null && !_picking && _battle.UseFreeze();
         }
 
         public bool UseBomb()
         {
-            if (!_running || _battle == null || _battle.Dragon.FrontSlice >= _battle.Dragon.SliceCount)
+            if (!_running || _battle == null || _picking || _battle.Dragon.FrontSlice >= _battle.Dragon.SliceCount)
             {
                 return false;
             }
@@ -691,8 +866,11 @@ namespace PixelDefense.Gameplay
 
         public bool AddSlot()
         {
-            return _running && _battle != null && _battle.AddSlot();
+            return _running && _battle != null && !_picking && _battle.AddSlot();
         }
+
+        /// <summary>World size of a cannon seated on the current slot row.</summary>
+        private float SeatSize => _space.SeatedCannonSize(_battle.SlotCount) * _space.Scale;
 
         private void Subscribe()
         {
@@ -745,7 +923,8 @@ namespace PixelDefense.Gameplay
         {
             CannonView view = _byId[cannonId];
             _slotViews[slot] = view;
-            view.JumpTo(_arena.SlotWorldPosition(slot), _settings.DeployDuration, _cts.Token).Forget();
+            view.SetPickable(false);
+            view.JumpTo(_arena.SlotWorldPosition(slot), SeatSize, _settings.DeployDuration, _cts.Token).Forget();
             _fx.Puff(view.transform.position, new Color(0.85f, 0.87f, 1f, 0.7f), 4, 0.35f);
             _audio.Play(_sfx.Tap);
             _audio.Play(_sfx.Jump, UnityEngine.Random.Range(0.95f, 1.1f), 0.8f);
@@ -882,9 +1061,9 @@ namespace PixelDefense.Gameplay
             for (int i = 0; i < _battle.SlotCount; i++)
             {
                 CannonView view = _slotViews[i];
-                if (view != null && view.State == CannonState.InSlot)
+                if (view != null)
                 {
-                    view.SlideTo(_arena.SlotWorldPosition(i), 0f);
+                    view.Reseat(_arena.SlotWorldPosition(i), SeatSize);
                 }
             }
             _audio.Play(_sfx.SlotAdd);
@@ -951,7 +1130,7 @@ namespace PixelDefense.Gameplay
             _fx.SetSmoke(false);
             _fx.SetFire(false);
             Vector3 head = _dragon.Head.position;
-            Time.timeScale = 0.3f;
+            Time.timeScale = 0.3f * _speed;
             _cameraRig.FocusOn(head, 1.18f);
             _cameraRig.Kick(-2.5f);
             _dragon.Roar(0.8f);
@@ -959,7 +1138,7 @@ namespace PixelDefense.Gameplay
             _haptics.Play(HapticStyle.Medium);
             await UniTask.Delay(TimeSpan.FromSeconds(0.65f), DelayType.UnscaledDeltaTime, cancellationToken: token);
 
-            Time.timeScale = 1f;
+            Time.timeScale = _speed;
             Vector3 center = _dragon.HeadCenter;
             _dragon.Explode();
             Praise?.Invoke("DRAGON SLAIN!", new Color(1f, 0.82f, 0.23f));
@@ -997,10 +1176,10 @@ namespace PixelDefense.Gameplay
             _cameraRig.AddTrauma(0.5f);
             _arena.Shake(1.5f);
             _haptics.Play(HapticStyle.Failure);
-            Time.timeScale = 0.6f;
+            Time.timeScale = 0.6f * _speed;
             await UniTask.Delay(TimeSpan.FromSeconds(0.7f), DelayType.UnscaledDeltaTime, cancellationToken: token);
 
-            Time.timeScale = 1f;
+            Time.timeScale = _speed;
             Vector3 center = _space.Origin + Vector3.up * 0.3f;
             for (int i = 0; i < _battle.SlotCount; i++)
             {

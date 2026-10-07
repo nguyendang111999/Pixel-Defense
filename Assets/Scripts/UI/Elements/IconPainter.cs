@@ -39,6 +39,8 @@ namespace PixelDefense.UI
                     case IconKind.Vibrate: Vibrate(c, tint); break;
                     case IconKind.Dragon: Dragon(c, tint); break;
                     case IconKind.Star: Star(c, Gold); break;
+                    case IconKind.Pick: Pick(c, tint); break;
+                    case IconKind.Bot: Bot(c, tint); break;
                 }
             }
         }
@@ -246,6 +248,36 @@ namespace PixelDefense.UI
                 c.Line(74f, 38f, 56f, 44f, 5f, Ink, false);
                 c.Circle(44f, 74f, 3.5f, Ink);
                 c.Circle(56f, 74f, 3.5f, Ink);
+            }
+        }
+
+        /// <summary>Arcade claw lifting a cannon block: "take any one".</summary>
+        private static void Pick(Canvas c, Color tint)
+        {
+            c.Line(50f, 6f, 50f, 28f, 8f, tint);
+            c.RoundRect(37f, 60f, 26f, 26f, 7f, new Color(0.95f, 0.33f, 0.27f));
+            c.RoundRect(31f, 24f, 38f, 18f, 8f, tint);
+            c.Begin();
+            c.Bezier(38f, 38f, 20f, 50f, 20f, 72f, 34f, 88f);
+            c.StrokeOnly(9f, tint);
+            c.Begin();
+            c.Bezier(62f, 38f, 80f, 50f, 80f, 72f, 66f, 88f);
+            c.StrokeOnly(9f, tint);
+        }
+
+        /// <summary>Little robot head for the autoplay bot.</summary>
+        private static void Bot(Canvas c, Color tint)
+        {
+            c.Line(50f, 10f, 50f, 26f, 6f, tint);
+            c.Circle(50f, 10f, 7f, tint);
+            c.RoundRect(18f, 26f, 64f, 52f, 16f, tint);
+            c.RoundRect(10f, 42f, 10f, 20f, 4f, tint);
+            c.RoundRect(80f, 42f, 10f, 20f, 4f, tint);
+            if (c.Pass == 1)
+            {
+                c.Circle(37f, 50f, 8f, Ink);
+                c.Circle(63f, 50f, 8f, Ink);
+                c.Line(38f, 66f, 62f, 66f, 5f, Ink, false);
             }
         }
 

@@ -8,6 +8,7 @@ namespace PixelDefense.Core
         public const int MaxWidth = 5;
         public const int MaxWindow = 8;
         public const int MaxSlots = 7;
+        public const int MaxColumns = 4;
         public const float MaxSpeed = 20f;
 
         /// <summary>Appends issues for <paramref name="level"/>; returns false if any are errors.</summary>
@@ -49,6 +50,10 @@ namespace PixelDefense.Core
             if (level.ColumnCount == 0)
             {
                 Fail("Level has no cannon columns.");
+            }
+            else if (level.ColumnCount > MaxColumns)
+            {
+                Fail("At most " + MaxColumns + " cannon columns (found " + level.ColumnCount + ").");
             }
 
             for (int c = 0; c < level.ColumnCount; c++)

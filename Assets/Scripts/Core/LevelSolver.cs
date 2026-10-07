@@ -12,6 +12,9 @@ namespace PixelDefense.Core
         /// <summary>Column tapped for each deploy, in order.</summary>
         public int[] Moves = Array.Empty<int>();
 
+        /// <summary>Cannon id each move sends (the front of <see cref="Moves"/>' column at that point).</summary>
+        public int[] Cannons = Array.Empty<int>();
+
         /// <summary>True when always tapping a column whose color is currently exposed (else the leftmost) wins.</summary>
         public bool GreedyWins;
     }
@@ -28,23 +31,54 @@ namespace PixelDefense.Core
         public static SolveResult Solve(LevelDefinition level, BattleSettings settings, int nodeBudget)
         {
             var root = new Battle(level, settings, float.MaxValue / 4f) { MovementEnabled = false };
-            var result = new SolveResult();
-            var visited = new HashSet<ulong>();
-            var moves = new List<int>(level.CannonCount);
-            var order = new int[level.ColumnCount];
-            var scores = new int[level.ColumnCount];
-
-            result.Solved = Search(root, moves, visited, order, scores, nodeBudget, result);
-            if (result.Solved)
-            {
-                result.Moves = moves.ToArray();
-            }
-
+            SolveResult result = SolveSettled(root, nodeBudget);
             result.GreedyWins = PlayGreedy(level, settings);
             return result;
         }
 
-        private static bool Search(Battle state, List<int> moves, HashSet<ulong> visited, int[] order, int[] scores, int budget, SolveResult result)
+        /// <summary>
+        /// Plans the rest of a battle in progress: settles a frozen planning copy of <paramref name="live"/> (shots
+        /// land, cannons finish firing) and searches from there. Safe to call off the main thread with a copy
+        /// made by <see cref="Battle.CloneForPlanning"/>.
+        /// </summary>
+        public static SolveResult SolveFrom(Battle live, int nodeBudget)
+        {
+            Battle root = live.CloneForPlanning();
+            root.RunUntilQuiescent(SettleSeconds);
+            return SolveSettled(root, nodeBudget);
+        }
+
+        private static SolveResult SolveSettled(Battle root, int nodeBudget)
+        {
+            var result = new SolveResult();
+            var visited = new HashSet<ulong>();
+            var search = new SearchState(root.CannonCount, root.ColumnCount);
+            result.Solved = Search(root, search, visited, nodeBudget, result);
+            if (result.Solved)
+            {
+                result.Moves = search.Moves.ToArray();
+                result.Cannons = search.Cannons.ToArray();
+            }
+            return result;
+        }
+
+        private sealed class SearchState
+        {
+            public readonly List<int> Moves;
+            public readonly List<int> Cannons;
+            public readonly int[] Order;
+            public readonly int[] Scores;
+
+            public SearchState(int cannons, int columns)
+            {
+                Moves = new List<int>(cannons);
+                Cannons = new List<int>(cannons);
+                Order = new int[columns];
+                Scores = new int[columns];
+            }
+        }
+
+        private static bool Search(Battle state, SearchState search, HashSet<ulong> visited, int budget, SolveResult result)
         {
             if (state.Phase == BattlePhase.Won)
             {
@@ -67,13 +101,14 @@ namespace PixelDefense.Core
                 return false;
             }
 
-            int count = OrderColumns(state, order, scores);
+            int count = OrderColumns(state, search.Order, search.Scores);
             var localOrder = new int[count];
-            Array.Copy(order, localOrder, count);
+            Array.Copy(search.Order, localOrder, count);
 
             for (int k = 0; k < localOrder.Length; k++)
             {
                 int column = localOrder[k];
+                int cannon = state.FrontCannon(column);
                 Battle next = state.Clone();
                 if (next.Deploy(column) != DeployResult.Deployed)
                 {
@@ -81,12 +116,14 @@ namespace PixelDefense.Core
                 }
 
                 next.RunUntilQuiescent(SettleSeconds);
-                moves.Add(column);
-                if (Search(next, moves, visited, order, scores, budget, result))
+                search.Moves.Add(column);
+                search.Cannons.Add(cannon);
+                if (Search(next, search, visited, budget, result))
                 {
                     return true;
                 }
-                moves.RemoveAt(moves.Count - 1);
+                search.Moves.RemoveAt(search.Moves.Count - 1);
+                search.Cannons.RemoveAt(search.Cannons.Count - 1);
 
                 if (result.BudgetExceeded)
                 {

@@ -43,6 +43,15 @@
                         <ui:Label text="BOMB" class="booster__label" picking-mode="Ignore" />
                     </ui:VisualElement>
                     <ui:VisualElement class="booster-group" picking-mode="Ignore">
+                        <ui:Button name="pickButton" class="booster booster--pick">
+                            <pd:IconElement kind="Pick" class="booster__icon" />
+                            <ui:Label text="2" class="booster__badge" picking-mode="Ignore" />
+                            <ui:VisualElement class="booster__price booster__price--hidden" picking-mode="Ignore">
+                                <pd:IconElement kind="Coin" class="booster__price-icon" />
+                                <ui:Label text="120" class="booster__price-text" picking-mode="Ignore" />
+                            </ui:VisualElement>
+                        </ui:Button>
+                        <ui:Label text="PICK" class="booster__label" picking-mode="Ignore" />
                         <ui:Button name="slotButton" class="booster booster--slot">
                             <pd:IconElement kind="Plus" class="booster__icon" />
                             <ui:Label text="1" class="booster__badge" picking-mode="Ignore" />
@@ -58,6 +67,11 @@
                 <ui:VisualElement name="jamBanner" class="jam-banner jam-banner--hidden" picking-mode="Ignore">
                     <ui:Label text="SLOTS JAMMED!" class="jam-banner__title" picking-mode="Ignore" />
                     <ui:Label text="No cannon can hit the dragon's neck. Use a booster!" class="jam-banner__text body-text" picking-mode="Ignore" />
+                </ui:VisualElement>
+                <ui:VisualElement name="pickBanner" class="pick-banner pick-banner--hidden" picking-mode="Ignore">
+                    <ui:Label text="PICK A CANNON!" class="pick-banner__title" picking-mode="Ignore" />
+                    <ui:Label text="Time is frozen. Tap any cannon in your tray." class="pick-banner__text body-text" picking-mode="Ignore" />
+                    <ui:Button name="pickCancelButton" text="CANCEL" class="pick-banner__cancel" />
                 </ui:VisualElement>
                 <ui:VisualElement name="tutorial" class="tutorial tutorial--hidden" picking-mode="Ignore">
                     <ui:Label name="tutorialText" text="Tap a cannon!" class="tutorial__text" picking-mode="Ignore" />
@@ -126,6 +140,21 @@
                         <ui:VisualElement class="switch__knob" picking-mode="Ignore" />
                     </ui:VisualElement>
                 </ui:Button>
+                <ui:VisualElement name="settingsDebug" class="settings-debug hidden" picking-mode="Ignore">
+                    <ui:Label text="TESTING" class="settings-debug__title" picking-mode="Ignore" />
+                    <ui:Button name="botToggle" class="setting-row">
+                        <pd:IconElement kind="Bot" tint="#58D24F" class="setting-row__icon" />
+                        <ui:Label text="AUTOPLAY BOT" class="setting-row__label" picking-mode="Ignore" />
+                        <ui:VisualElement class="switch" picking-mode="Ignore">
+                            <ui:VisualElement class="switch__knob" picking-mode="Ignore" />
+                        </ui:VisualElement>
+                    </ui:Button>
+                    <ui:Button name="botSpeed" class="setting-row">
+                        <pd:IconElement kind="Play" tint="#4C8DF6" class="setting-row__icon" />
+                        <ui:Label text="GAME SPEED" class="setting-row__label" picking-mode="Ignore" />
+                        <ui:Label name="botSpeedValue" text="x1" class="setting-row__value" picking-mode="Ignore" />
+                    </ui:Button>
+                </ui:VisualElement>
                 <ui:VisualElement name="settingsBattleActions" class="panel__actions" picking-mode="Ignore">
                     <ui:Button name="restartButton" text="RESTART" class="big-button big-button--orange big-button--small" />
                     <ui:Button name="quitButton" text="HOME" class="big-button big-button--blue big-button--small" />
