@@ -23,7 +23,7 @@ name Three Scales
 track spiral_cw
 skin jade
 tutorial neck
-speed 4.49
+speed 5.99
 start 40
 width 3
 window 3
@@ -37,7 +37,7 @@ level L03
 name Coil Crawler
 track hairpin
 skin frost
-speed 3.87
+speed 5.18
 start 40
 width 3
 window 3
@@ -53,7 +53,7 @@ name Slot Squeeze
 track snake
 skin venom
 tutorial slots
-speed 4.28
+speed 5.52
 start 40
 width 3
 window 3
@@ -68,7 +68,7 @@ level L05
 name Golden Hoard (Boss)
 track square
 skin gold
-speed 4.49
+speed 5.99
 start 40
 width 3
 window 3
@@ -83,7 +83,7 @@ level L06
 name Striped Menace
 track zigzag
 skin jade
-speed 3.49
+speed 4.85
 start 40
 width 3
 window 2
@@ -99,7 +99,7 @@ name Jade Serpent
 track square
 skin frost
 tutorial boosters
-speed 4.49
+speed 5.99
 start 40
 width 3
 window 2
@@ -115,7 +115,7 @@ name Mystery Cannons
 track hairpin_cw
 skin venom
 tutorial hidden
-speed 3.03
+speed 4.29
 start 40
 width 3
 window 2
@@ -130,7 +130,7 @@ level L09
 name Frost Wyrm
 track snake_cw
 skin ember
-speed 3.10
+speed 4.34
 start 40
 width 3
 window 2
@@ -146,7 +146,7 @@ level L10
 name Shadow Wyrm (Boss)
 track spiral_cw
 skin shadow
-speed 3.73
+speed 5.11
 start 40
 width 3
 window 2
@@ -162,7 +162,7 @@ level L11
 name Ember Ribbon
 track zigzag_cw
 skin frost
-speed 3.25
+speed 4.59
 start 40
 width 3
 window 2
@@ -178,7 +178,7 @@ level L12
 name Venom Loop
 track spiral
 skin venom
-speed 3.68
+speed 5.08
 start 40
 width 3
 window 2
@@ -194,7 +194,7 @@ level L13
 name Rainbow Tail
 track snake
 skin ember
-speed 3.43
+speed 4.75
 start 40
 width 3
 window 2
@@ -210,7 +210,7 @@ level L14
 name Tight Corners
 track square_cw
 skin jade
-speed 4.24
+speed 5.65
 start 40
 width 3
 window 2
@@ -226,7 +226,7 @@ level L15
 name Molten Monarch (Boss)
 track snake
 skin gold
-speed 2.82
+speed 4.13
 start 40
 width 3
 window 2
@@ -242,7 +242,7 @@ level L16
 name Copper Coil
 track spiral_cw
 skin venom
-speed 3.34
+speed 4.76
 start 40
 width 3
 window 2
@@ -258,7 +258,7 @@ level L17
 name Glacier Glide
 track hairpin
 skin ember
-speed 2.16
+speed 3.31
 start 40
 width 3
 window 2
@@ -274,7 +274,7 @@ level L18
 name Twin Stripes
 track zigzag
 skin jade
-speed 2.80
+speed 4.17
 start 40
 width 3
 window 2
@@ -290,7 +290,7 @@ level L19
 name Hydra Neck
 track snake_cw
 skin frost
-speed 3.01
+speed 4.50
 start 40
 width 3
 window 2
@@ -306,7 +306,7 @@ level L20
 name Obsidian Emperor (Boss)
 track square_cw
 skin shadow
-speed 3.22
+speed 4.64
 start 40
 width 3
 window 2
@@ -322,7 +322,7 @@ level L21
 name Pixel Python
 track snake
 skin ember
-speed 3.11
+speed 4.62
 start 40
 width 3
 window 2
@@ -338,7 +338,7 @@ level L22
 name Lantern Drake
 track square
 skin jade
-speed 3.28
+speed 4.45
 start 40
 width 3
 window 2
@@ -354,7 +354,7 @@ level L23
 name Crystal Coil
 track spiral
 skin frost
-speed 3.46
+speed 4.92
 start 40
 width 3
 window 2
@@ -370,7 +370,7 @@ level L24
 name Thunder Tail
 track zigzag_cw
 skin venom
-speed 2.41
+speed 3.67
 start 40
 width 3
 window 2
@@ -386,7 +386,7 @@ level L25
 name Ancient Horror (Boss)
 track spiral
 skin gold
-speed 2.52
+speed 3.79
 start 40
 width 3
 window 2

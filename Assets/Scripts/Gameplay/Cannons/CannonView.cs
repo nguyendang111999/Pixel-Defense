@@ -23,6 +23,7 @@ namespace PixelDefense.Gameplay
     {
         private const float HiddenGray = 0.62f;
         private const float RestPitch = -8f;
+        private const float EnterDuration = 0.42f;
 
         private static readonly int FlashId = Shader.PropertyToID("_Flash");
         private static readonly int EmissionId = Shader.PropertyToID("_Emission");
@@ -173,13 +174,15 @@ namespace PixelDefense.Gameplay
                 .OnStart(() => _squashSpring.Kick(-4f));
         }
 
-        public void PopIn(Vector3 position, float delay)
+        /// <summary>Slides in from <paramref name="from"/> (off-screen below the tray) to its place in the column.</summary>
+        public void EnterFrom(Vector3 from, Vector3 to, float delay)
         {
             _move?.Kill();
             gameObject.SetActive(true);
-            transform.position = position;
-            transform.localScale = Vector3.zero;
-            _move = transform.DOScale(_traySize, 0.3f).SetDelay(delay).SetEase(Ease.OutBack).SetLink(gameObject);
+            transform.position = from;
+            transform.localScale = Vector3.one * _traySize;
+            _move = transform.DOMove(to, EnterDuration).SetDelay(delay).SetEase(Ease.OutCubic).SetLink(gameObject)
+                .OnComplete(() => _squashSpring.Kick(-5f));
         }
 
         /// <param name="seatSize">World size once seated on the slot.</param>
@@ -287,7 +290,7 @@ namespace PixelDefense.Gameplay
             return exit;
         }
 
-        /// <summary>Parks a column cannon that is too deep to be visible; <see cref="PopIn"/> brings it back.</summary>
+        /// <summary>Parks a column cannon that is too deep to be visible; <see cref="EnterFrom"/> brings it back.</summary>
         public void Hide()
         {
             _move?.Kill();

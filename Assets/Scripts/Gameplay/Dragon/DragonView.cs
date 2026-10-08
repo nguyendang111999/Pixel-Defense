@@ -408,7 +408,9 @@ namespace PixelDefense.Gameplay
 
             if (frontSlice < body.SliceCount)
             {
-                _headS = _display[frontSlice] + 0.5f + _config.NeckGap;
+                // Locked to the neck while crawling forward; when the front slices die, glide back onto the new front.
+                float neckS = _display[frontSlice] + 0.5f + _config.NeckGap;
+                _headS = neckS >= _headS ? neckS : Mathf.Lerp(_headS, neckS, 1f - Mathf.Exp(-_config.HeadRecoilSharpness * dt));
             }
 
             float reach = DragonHeadModel.LengthVoxels * _config.HeadVoxel;

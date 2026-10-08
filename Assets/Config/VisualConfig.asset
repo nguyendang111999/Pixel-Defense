@@ -22,7 +22,7 @@ MonoBehaviour:
   SlotGap: 0.9
   SlotRowFill: 0.91
   ColumnSpacing: 5.4
-  RowSpacing: 4.7
+  RowSpacing: 6.4
   ColumnsGap: 1.6
   VisibleRows: 3
   CannonSize: 4.5
@@ -101,8 +101,9 @@ MonoBehaviour:
   ProjectileSize: 0.95
   DebrisPerCube: 5
   DebrisSpeed: 5.5
-  RecoilFrequency: 5.5
-  RecoilDamping: 0.55
+  RecoilFrequency: 9
+  RecoilDamping: 1
+  HeadRecoilSharpness: 14
   BodyWaveAmplitude: 0.16
   ExposedPulse: 0.22
   UnexposedDarken: 0.1

@@ -29,9 +29,10 @@ namespace PixelDefense.Core
 
         /// <summary>
         /// How far (in slices) the head is knocked back when a slice is cleared; the rest of the gap closes from
-        /// the tail. 1 = full knock-back, 0 = the tail always catches up.
+        /// the tail. 1 = full knock-back (the body keeps a constant speed and only the head is pushed back),
+        /// 0 = the tail always catches up.
         /// </summary>
-        public float RecoilFraction = 0.35f;
+        public float RecoilFraction = 1f;
 
         /// <summary>Slices before the base over which the dragon slows to a menacing crawl.</summary>
         public float DangerZone = 10f;

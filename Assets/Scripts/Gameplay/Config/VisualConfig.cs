@@ -24,7 +24,8 @@ namespace PixelDefense.Gameplay
         [Range(0.5f, 1f)] public float SlotRowFill = 0.91f;
 
         public float ColumnSpacing = 5.4f;
-        public float RowSpacing = 4.7f;
+        [Tooltip("Distance between cannon rows; enough that a barrel never pokes into the cannon ahead.")]
+        public float RowSpacing = 6.4f;
         public float ColumnsGap = 1.6f;
 
         [Tooltip("Cannons shown per column; deeper ones stay hidden until they move up.")]
@@ -81,8 +82,14 @@ namespace PixelDefense.Gameplay
         public float ProjectileSize = 0.95f;
         public int DebrisPerCube = 5;
         public float DebrisSpeed = 5.5f;
-        public float RecoilFrequency = 5.5f;
-        [Range(0f, 1.5f)] public float RecoilDamping = 0.55f;
+        [Tooltip("How tightly body cubes follow their track positions (Hz).")]
+        public float RecoilFrequency = 9f;
+
+        [Tooltip("1 = critically damped: cubes glide without overshooting.")]
+        [Range(0f, 1.5f)] public float RecoilDamping = 1f;
+
+        [Tooltip("How fast the head glides back onto the next slice when the front of the body is destroyed.")]
+        public float HeadRecoilSharpness = 14f;
         public float BodyWaveAmplitude = 0.16f;
         public float ExposedPulse = 0.22f;
         [Range(0f, 0.5f)] public float UnexposedDarken = 0.1f;

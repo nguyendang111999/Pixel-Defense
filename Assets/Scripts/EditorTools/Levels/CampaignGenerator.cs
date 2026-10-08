@@ -21,7 +21,7 @@ namespace PixelDefense.EditorTools
         private const int SolverBudget = 150000;
         private const int Attempts = 40;
         private const float MinSpeed = 0.35f;
-        private const float MaxSpeed = 4.5f;
+        private const float MaxSpeed = 6f;
 
         /// <summary>Tap reaction of the speed-tuning bot; slower than an expert so levels leave room to think.</summary>
         private const float BotReaction = 1.2f;

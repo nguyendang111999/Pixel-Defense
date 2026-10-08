@@ -468,7 +468,7 @@ namespace PixelDefense.Gameplay
                 Vector3 target = _space.ColumnPosition(column, _level.ColumnCount, row);
                 if (intro || !view.gameObject.activeSelf)
                 {
-                    view.PopIn(target, intro ? 0.35f + row * 0.07f + column * 0.05f : 0.12f + row * 0.03f);
+                    view.EnterFrom(TrayEntryPosition(column), target, intro ? 0.3f + row * 0.09f + column * 0.05f : 0.05f + row * 0.03f);
                 }
                 else
                 {
@@ -478,6 +478,25 @@ namespace PixelDefense.Gameplay
                 view.SetPickable(_picking);
                 row++;
             }
+        }
+
+        /// <summary>
+        /// Where cannons joining a column start: below the bottom edge of the screen (and at least one row behind
+        /// the last visible row), so they slide up into view.
+        /// </summary>
+        private Vector3 TrayEntryPosition(int column)
+        {
+            Vector3 lastRow = _space.ColumnPosition(column, _level.ColumnCount, Mathf.Max(1, _visuals.VisibleRows) - 1);
+            float z = lastRow.z - _visuals.RowSpacing * _space.Scale;
+            Camera camera = _cameraRig.Camera;
+            float viewportX = camera.WorldToViewportPoint(lastRow).x;
+            Ray bottom = camera.ViewportPointToRay(new Vector3(viewportX, 0f, 0f));
+            if (bottom.direction.y < -1e-4f)
+            {
+                float distance = (lastRow.y - bottom.origin.y) / bottom.direction.y;
+                z = Mathf.Min(z, bottom.GetPoint(distance).z - _visuals.CannonSize * _space.Scale);
+            }
+            return new Vector3(lastRow.x, lastRow.y, z);
         }
 
         private void Update()
@@ -814,8 +833,8 @@ namespace PixelDefense.Gameplay
             Vector3 frontLeft = camera.WorldToScreenPoint(_space.ColumnPosition(0, columns, 0));
             Vector3 frontRight = camera.WorldToScreenPoint(_space.ColumnPosition(columns - 1, columns, 0));
             float spacing = columns > 1 ? Mathf.Abs(frontRight.x - frontLeft.x) / (columns - 1) : Screen.width * 0.25f;
-            float cell = camera.WorldToScreenPoint(_space.ColumnPosition(0, columns, 0) + Vector3.forward * (_visuals.RowSpacing * _space.Scale)).y - frontLeft.y;
-            float top = frontLeft.y + Mathf.Abs(cell) * 0.75f;
+            float cell = camera.WorldToScreenPoint(_space.ColumnPosition(0, columns, 0) + Vector3.forward * (_visuals.CannonSize * _space.Scale)).y - frontLeft.y;
+            float top = frontLeft.y + Mathf.Abs(cell) * 0.8f;
             if (screen.y > top)
             {
                 return -1;

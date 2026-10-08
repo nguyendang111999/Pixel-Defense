@@ -22,7 +22,7 @@ MonoBehaviour:
     LeaveDelay: 0.32
     ContactLoseTime: 2
     HeadLength: 7.37
-    RecoilFraction: 0.35
+    RecoilFraction: 1
     DangerZone: 10
     DangerSpeedFactor: 0.55
     EnrageFraction: 0.2
